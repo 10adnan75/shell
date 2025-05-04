@@ -17,6 +17,7 @@ class CommandHandler {
             case "exit" -> System.exit(0);
             case "echo" -> handleEcho(input);
             case "type" -> handleType(tokens);
+            case "pwd" -> System.out.println(System.getProperty("user.dir"));
             default -> handleExternalCommand(tokens, input);
         }
     }
