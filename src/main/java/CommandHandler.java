@@ -36,7 +36,7 @@ class CommandHandler {
         }
 
         String cmd = tokens[1];
-        if (cmd.equals("echo") || cmd.equals("type") || cmd.equals("exit")) {
+        if (cmd.equals("echo") || cmd.equals("type") || cmd.equals("exit") || cmd.equals("pwd")) {
             System.out.println(cmd + " is a shell builtin");
             return;
         }
