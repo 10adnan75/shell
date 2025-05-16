@@ -39,7 +39,15 @@ public class Main {
             char c = input.charAt(i);
 
             if (escaping) {
-                token.append(c);
+                if (inDoubleQuote) {
+                    if (c == '"' || c == '\\' || c == '$' || c == '\n') {
+                        token.append(c);
+                    } else {
+                        token.append('\\').append(c); 
+                    }
+                } else {
+                    token.append(c);
+                }
                 escaping = false;
                 continue;
             }
@@ -53,31 +61,35 @@ public class Main {
                 continue;
             }
 
-            if (inSingleQuote) {
-                if (c == '\'') {
-                    inSingleQuote = false;
+            if (c == '\'') {
+                if (inDoubleQuote) {
+                    token.append(c); 
                 } else {
-                    token.append(c);
+                    inSingleQuote = !inSingleQuote;
                 }
-            } else if (inDoubleQuote) {
-                if (c == '"') {
-                    inDoubleQuote = false;
+                continue;
+            }
+
+            if (c == '"') {
+                if (inSingleQuote) {
+                    token.append('"'); 
                 } else {
-                    token.append(c);
+                    inDoubleQuote = !inDoubleQuote;
                 }
-            } else {
-                if (Character.isWhitespace(c)) {
+                continue;
+            }
+
+            if (Character.isWhitespace(c)) {
+                if (inSingleQuote || inDoubleQuote) {
+                    token.append(c);
+                } else {
                     if (token.length() > 0) {
                         tokens.add(token.toString());
                         token.setLength(0);
                     }
-                } else if (c == '\'') {
-                    inSingleQuote = true;
-                } else if (c == '"') {
-                    inDoubleQuote = true;
-                } else {
-                    token.append(c);
                 }
+            } else {
+                token.append(c);
             }
         }
 
