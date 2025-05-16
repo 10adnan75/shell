@@ -13,6 +13,11 @@ public class CdCommand implements Command {
         }
 
         String target = args[1];
+
+        if (target.equals("~")) {
+            target = System.getenv("HOME");
+        }
+
         Path newPath = Paths.get(target);
 
         if (!newPath.isAbsolute()) {
@@ -23,7 +28,7 @@ public class CdCommand implements Command {
         if (dir.exists() && dir.isDirectory()) {
             return newPath;
         } else {
-            System.out.println("cd: " + target + ": No such file or directory");
+            System.out.println("cd: " + args[1] + ": No such file or directory");
             return currentDirectory;
         }
     }
