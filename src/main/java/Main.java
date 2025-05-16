@@ -30,23 +30,48 @@ public class Main {
     private static List<String> tokenize(String input) {
         List<String> tokens = new ArrayList<>();
         StringBuilder token = new StringBuilder();
+
         boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        boolean escaping = false;
 
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
 
-            if (c == '\'') {
-                inSingleQuote = !inSingleQuote;
-                continue;
-            }
-
-            if (Character.isWhitespace(c) && !inSingleQuote) {
-                if (token.length() > 0) {
-                    tokens.add(token.toString());
-                    token.setLength(0);
+            if (inSingleQuote) {
+                if (c == '\'') {
+                    inSingleQuote = false;
+                } else {
+                    token.append(c);
+                }
+            } else if (inDoubleQuote) {
+                if (escaping) {
+                    if (c == '\\' || c == '"' || c == '$') {
+                        token.append(c);
+                    } else {
+                        token.append('\\').append(c); // keep the backslash
+                    }
+                    escaping = false;
+                } else if (c == '\\') {
+                    escaping = true;
+                } else if (c == '"') {
+                    inDoubleQuote = false;
+                } else {
+                    token.append(c);
                 }
             } else {
-                token.append(c);
+                if (Character.isWhitespace(c)) {
+                    if (token.length() > 0) {
+                        tokens.add(token.toString());
+                        token.setLength(0);
+                    }
+                } else if (c == '\'') {
+                    inSingleQuote = true;
+                } else if (c == '"') {
+                    inDoubleQuote = true;
+                } else {
+                    token.append(c);
+                }
             }
         }
 
