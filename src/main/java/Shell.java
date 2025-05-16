@@ -1,22 +1,22 @@
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
-class Shell {
-    private final Scanner scanner;
-    private final CommandHandler commandHandler;
+import builtins.Command;
 
-    public Shell() {
-        this.scanner = new Scanner(System.in);
-        this.commandHandler = new CommandHandler();
-    }
+public class Shell {
+    public static void main(String[] args) {
+        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
+        Scanner scanner = new Scanner(System.in);
 
-    public void start() {
         while (true) {
             System.out.print("$ ");
-            String input = scanner.nextLine().trim();
+            String rawInput = scanner.nextLine().trim();
+            if (rawInput.isBlank()) continue;
 
-            if (input.isBlank()) continue;
-
-            commandHandler.handle(input);
+            String[] tokens = rawInput.split(" ");
+            Command command = CommandHandler.getCommand(tokens, rawInput);
+            currentDirectory = command.execute(tokens, rawInput, currentDirectory);
         }
     }
 }
