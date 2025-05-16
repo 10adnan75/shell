@@ -1,4 +1,9 @@
+package core;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 
 import builtins.*;
@@ -33,8 +38,27 @@ public class CommandHandler {
         return false;
     }
 
-    public Path handleCommand(String[] inputSplit, String input, Path currentDirectory) {
-        Command command = getCommand(inputSplit, input);
-        return command.execute(inputSplit, input, currentDirectory);
+    public Path handleCommand(String input, Path currentDirectory) {
+        Tokenizer tokenizer = new Tokenizer();
+        TokenizerResult result = tokenizer.tokenize(input);
+
+        PrintStream originalOut = System.out;
+
+        try {
+            if (result.isRedirect && result.redirectTarget != null) {
+                FileOutputStream fos = new FileOutputStream(result.redirectTarget);
+                PrintStream ps = new PrintStream(fos);
+                System.setOut(ps);
+            }
+
+            Command cmd = getCommand(result.tokens.toArray(new String[0]), input);
+            return cmd.execute(result.tokens.toArray(new String[0]), input, currentDirectory);
+
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            return currentDirectory;
+        } finally {
+            System.setOut(originalOut);
+        }
     }
 }

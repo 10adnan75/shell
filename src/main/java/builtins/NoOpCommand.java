@@ -1,5 +1,6 @@
+package builtins;
+
 import java.nio.file.Path;
-import builtins.Command;
 
 public class NoOpCommand implements Command {
     @Override

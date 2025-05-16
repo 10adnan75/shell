@@ -1,3 +1,5 @@
+package core;
+
 import java.io.*;
 import java.nio.file.Path;
 
