@@ -1,15 +1,14 @@
 package core;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import builtins.*;
 
 public class CommandHandler {
-
-    public static Command getCommand(String[] tokens, String rawInput) {
+    public static Command getCommand(String[] tokens, String rawInput, File redirectFile) {
         String cmd = tokens[0];
 
         return switch (cmd) {
@@ -20,7 +19,7 @@ public class CommandHandler {
             case "cd" -> new CdCommand();
             default -> {
                 if (isExecutableAvailable(cmd)) {
-                    yield new ExternalCommand(tokens);
+                    yield new ExternalCommand(tokens, redirectFile);
                 } else {
                     System.out.println(rawInput + ": command not found");
                     yield new NoOpCommand();
@@ -39,30 +38,33 @@ public class CommandHandler {
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
-        Tokenizer tokenizer = new Tokenizer();
-        TokenizerResult result = tokenizer.tokenize(input);
+        String[] parts = input.split("\\s+");
 
-        PrintStream originalOut = System.out;
-        PrintStream redirectedOut = null;
+        File redirectFile = null;
+        List<String> commandTokens = new ArrayList<>();
 
-        try {
-            if (result.isRedirect && result.redirectTarget != null) {
-                FileOutputStream fos = new FileOutputStream(result.redirectTarget);
-                redirectedOut = new PrintStream(fos);
-                System.setOut(redirectedOut);
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].equals(">") || parts[i].equals("1>")) {
+                if (i + 1 < parts.length) {
+                    redirectFile = new File(parts[i + 1]);
+                    i++;
+                } else {
+                    System.err.println("Syntax error: no file specified for redirection");
+                    return currentDirectory;
+                }
+            } else {
+                commandTokens.add(parts[i]);
             }
-
-            Command cmd = getCommand(result.tokens.toArray(new String[0]), input);
-            return cmd.execute(result.tokens.toArray(new String[0]), input, currentDirectory);
-
-        } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
-            return currentDirectory;
-        } finally {
-            if (redirectedOut != null) {
-                redirectedOut.close();
-            }
-            System.setOut(originalOut);
         }
+
+        if (commandTokens.isEmpty()) {
+            return currentDirectory;
+        }
+
+        String[] cmdTokensArray = commandTokens.toArray(new String[0]);
+        String rawCommand = String.join(" ", commandTokens);
+
+        Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile);
+        return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
     }
 }
