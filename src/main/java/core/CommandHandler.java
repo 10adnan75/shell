@@ -5,10 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
-
 import builtins.*;
 
 public class CommandHandler {
+
     public static Command getCommand(String[] tokens, String rawInput) {
         String cmd = tokens[0];
 
@@ -43,12 +43,13 @@ public class CommandHandler {
         TokenizerResult result = tokenizer.tokenize(input);
 
         PrintStream originalOut = System.out;
+        PrintStream redirectedOut = null;
 
         try {
             if (result.isRedirect && result.redirectTarget != null) {
                 FileOutputStream fos = new FileOutputStream(result.redirectTarget);
-                PrintStream ps = new PrintStream(fos);
-                System.setOut(ps);
+                redirectedOut = new PrintStream(fos);
+                System.setOut(redirectedOut);
             }
 
             Command cmd = getCommand(result.tokens.toArray(new String[0]), input);
@@ -58,6 +59,9 @@ public class CommandHandler {
             System.err.println("Error: " + e.getMessage());
             return currentDirectory;
         } finally {
+            if (redirectedOut != null) {
+                redirectedOut.close();
+            }
             System.setOut(originalOut);
         }
     }
