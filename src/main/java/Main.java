@@ -38,6 +38,21 @@ public class Main {
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
 
+            if (escaping) {
+                token.append(c);
+                escaping = false;
+                continue;
+            }
+
+            if (c == '\\') {
+                if (inSingleQuote) {
+                    token.append('\\');
+                } else {
+                    escaping = true;
+                }
+                continue;
+            }
+
             if (inSingleQuote) {
                 if (c == '\'') {
                     inSingleQuote = false;
@@ -45,16 +60,7 @@ public class Main {
                     token.append(c);
                 }
             } else if (inDoubleQuote) {
-                if (escaping) {
-                    if (c == '\\' || c == '"' || c == '$') {
-                        token.append(c);
-                    } else {
-                        token.append('\\').append(c); // keep the backslash
-                    }
-                    escaping = false;
-                } else if (c == '\\') {
-                    escaping = true;
-                } else if (c == '"') {
+                if (c == '"') {
                     inDoubleQuote = false;
                 } else {
                     token.append(c);
