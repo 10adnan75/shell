@@ -1,10 +1,8 @@
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,21 +17,43 @@ public class Main {
             if (input.isBlank())
                 continue;
 
-            List<String> tokensList = new ArrayList<>();
-            Matcher matcher = Pattern.compile("'([^']*)'|\\S+").matcher(input);
-            while (matcher.find()) {
-                if (matcher.group(1) != null) {
-                    tokensList.add(matcher.group(1));
-                } else {
-                    tokensList.add(matcher.group());
-                }
-            }
-
-            if (tokensList.isEmpty())
+            List<String> tokenList = tokenize(input);
+            if (tokenList.isEmpty())
                 continue;
 
-            String[] inputSplit = tokensList.toArray(new String[0]);
+            String[] inputSplit = tokenList.toArray(new String[0]);
+
             currentDirectory = handler.handleCommand(inputSplit, input, currentDirectory);
         }
+    }
+
+    private static List<String> tokenize(String input) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder token = new StringBuilder();
+        boolean inSingleQuote = false;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '\'') {
+                inSingleQuote = !inSingleQuote;
+                continue;
+            }
+
+            if (Character.isWhitespace(c) && !inSingleQuote) {
+                if (token.length() > 0) {
+                    tokens.add(token.toString());
+                    token.setLength(0);
+                }
+            } else {
+                token.append(c);
+            }
+        }
+
+        if (token.length() > 0) {
+            tokens.add(token.toString());
+        }
+
+        return tokens;
     }
 }
