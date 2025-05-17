@@ -13,37 +13,23 @@ public class Tokenizer {
             char c = input.charAt(i);
 
             if (escape) {
-                switch (c) {
-                    case 'n':
+                if (inDouble || (!inSingle && !inDouble)) {
+                    if (c == 'n')
                         current.append('\n');
-                        break;
-                    case 't':
+                    else if (c == 't')
                         current.append('\t');
-                        break;
-                    case '\\':
-                        current.append('\\');
-                        break;
-                    case '"':
-                        current.append('"');
-                        break;
-                    case '\'':
-                        current.append('\'');
-                        break;
-                    default:
+                    else
                         current.append(c);
-                        break;
+                } else {
+                    current.append('\\').append(c);
                 }
                 escape = false;
             } else if (c == '\\') {
-                if (inDouble || (!inSingle && !inDouble)) {
-                    escape = true;
-                } else {
-                    current.append(c);
-                }
-            } else if (c == '\'' && !inDouble) {
-                inSingle = !inSingle;
+                escape = true;
             } else if (c == '"' && !inSingle) {
                 inDouble = !inDouble;
+            } else if (c == '\'' && !inDouble) {
+                inSingle = !inSingle;
             } else if (Character.isWhitespace(c) && !inSingle && !inDouble) {
                 if (current.length() > 0) {
                     tokens.add(current.toString());
