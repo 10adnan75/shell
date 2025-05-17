@@ -14,12 +14,26 @@ public class Tokenizer {
 
             if (escape) {
                 if (inDouble || (!inSingle && !inDouble)) {
-                    if (c == 'n')
-                        current.append('\n');
-                    else if (c == 't')
-                        current.append('\t');
-                    else
-                        current.append(c);
+                    switch (c) {
+                        case 'n':
+                            current.append('\n');
+                            break;
+                        case 't':
+                            current.append('\t');
+                            break;
+                        case '"':
+                            current.append('"');
+                            break;
+                        case '\\':
+                            current.append('\\');
+                            break;
+                        case '\'':
+                            current.append('\'');
+                            break;
+                        default:
+                            current.append(c);
+                            break;
+                    }
                 } else {
                     current.append('\\').append(c);
                 }
@@ -43,11 +57,11 @@ public class Tokenizer {
         if (current.length() > 0)
             tokens.add(current.toString());
 
-        TokenizerResult result = new TokenizerResult(tokens);
+        TokenizerResult result = new TokenizerResult(new ArrayList<>(tokens));
 
         int redirectIndex = -1;
-        for (int i = 0; i < tokens.size(); i++) {
-            String token = tokens.get(i);
+        for (int i = 0; i < result.tokens.size(); i++) {
+            String token = result.tokens.get(i);
             if (token.equals(">") || token.equals("1>")) {
                 redirectIndex = i;
                 result.isRedirect = true;
@@ -55,10 +69,9 @@ public class Tokenizer {
             }
         }
 
-        if (redirectIndex != -1 && redirectIndex + 1 < tokens.size()) {
-            result.redirectTarget = tokens.get(redirectIndex + 1);
-            tokens = tokens.subList(0, redirectIndex);
-            result.tokens = tokens;
+        if (redirectIndex != -1 && redirectIndex + 1 < result.tokens.size()) {
+            result.redirectTarget = result.tokens.get(redirectIndex + 1);
+            result.tokens = result.tokens.subList(0, redirectIndex);
         }
 
         return result;
