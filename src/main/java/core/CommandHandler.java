@@ -1,8 +1,9 @@
 package core;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import builtins.*;
@@ -38,33 +39,41 @@ public class CommandHandler {
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
-        String[] parts = input.split("\\s+");
+        Tokenizer tokenizer = new Tokenizer();
+        TokenizerResult result = tokenizer.tokenize(input);
 
+        List<String> tokens = result.tokens;
         File redirectFile = null;
-        List<String> commandTokens = new ArrayList<>();
 
-        for (int i = 0; i < parts.length; i++) {
-            if (parts[i].equals(">") || parts[i].equals("1>")) {
-                if (i + 1 < parts.length) {
-                    redirectFile = new File(parts[i + 1]);
-                    i++;
-                } else {
-                    System.err.println("Syntax error: no file specified for redirection");
-                    return currentDirectory;
-                }
-            } else {
-                commandTokens.add(parts[i]);
-            }
+        if (result.isRedirect) {
+            redirectFile = new File(result.redirectTarget);
         }
 
-        if (commandTokens.isEmpty()) {
+        if (tokens.isEmpty()) {
             return currentDirectory;
         }
 
-        String[] cmdTokensArray = commandTokens.toArray(new String[0]);
-        String rawCommand = String.join(" ", commandTokens);
-
+        String[] cmdTokensArray = tokens.toArray(new String[0]);
+        String rawCommand = input;
         Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile);
-        return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
+
+        boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand || cmd instanceof ExitCommand
+                || cmd instanceof TypeCommand || cmd instanceof PwdCommand);
+
+        PrintStream originalOut = System.out;
+        try {
+            if (redirectFile != null && isBuiltin) {
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile)));
+            }
+
+            return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
+        } catch (Exception e) {
+            System.err.println("Execution error: " + e.getMessage());
+            return currentDirectory;
+        } finally {
+            if (redirectFile != null && isBuiltin) {
+                System.setOut(originalOut);
+            }
+        }
     }
 }

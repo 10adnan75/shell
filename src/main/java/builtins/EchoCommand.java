@@ -9,10 +9,11 @@ public class EchoCommand implements Command {
             StringBuilder output = new StringBuilder();
             for (int i = 1; i < args.length; i++) {
                 output.append(args[i]);
-                if (i < args.length - 1)
+                if (i < args.length - 1) {
                     output.append(" ");
+                }
             }
-            System.out.println(output.toString());
+            System.out.println(output);
         } else {
             System.out.println();
         }
