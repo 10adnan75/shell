@@ -13,10 +13,33 @@ public class Tokenizer {
             char c = input.charAt(i);
 
             if (escape) {
-                current.append(c);
+                switch (c) {
+                    case 'n':
+                        current.append('\n');
+                        break;
+                    case 't':
+                        current.append('\t');
+                        break;
+                    case '\\':
+                        current.append('\\');
+                        break;
+                    case '"':
+                        current.append('"');
+                        break;
+                    case '\'':
+                        current.append('\'');
+                        break;
+                    default:
+                        current.append(c);
+                        break;
+                }
                 escape = false;
             } else if (c == '\\') {
-                escape = true;
+                if (inDouble || (!inSingle && !inDouble)) {
+                    escape = true;
+                } else {
+                    current.append(c);
+                }
             } else if (c == '\'' && !inDouble) {
                 inSingle = !inSingle;
             } else if (c == '"' && !inSingle) {
