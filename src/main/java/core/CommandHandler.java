@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import builtins.*;
@@ -19,7 +18,7 @@ public class CommandHandler {
 
         if (result.isRedirect) {
             redirectFile = new File(result.redirectTarget);
-            
+
             File parentDir = redirectFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
@@ -86,19 +85,7 @@ public class CommandHandler {
             case "type" -> new TypeCommand();
             case "pwd" -> new PwdCommand();
             case "cd" -> new CdCommand();
-            default -> {
-                if (isExecutableAvailable(cmd)) {
-                    yield new ExternalCommand(tokens, redirectFile);
-                } else {
-                    Path cmdPath = Paths.get(cmd);
-                    File file = cmdPath.toFile();
-                    if (file.exists() && file.canExecute()) {
-                        yield new ExternalCommand(tokens, redirectFile);
-                    } else {
-                        yield new ExternalCommand(tokens, redirectFile);
-                    }
-                }
-            }
+            default -> new ExternalCommand(tokens, redirectFile);
         };
     }
 

@@ -58,7 +58,7 @@ public class ExternalCommand implements Command {
             } catch (IOException e) {
                 if (e.getMessage().contains("No such file or directory") ||
                         e.getMessage().contains("error=2")) {
-                    System.out.println(rawInput + ": command not found");
+                    System.err.println(processedArgs[0] + ": command not found");
                 } else {
                     System.err.println("Error executing command: " + e.getMessage());
                 }

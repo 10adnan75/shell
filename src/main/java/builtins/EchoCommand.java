@@ -13,7 +13,7 @@ public class EchoCommand implements Command {
                     output.append(" ");
                 }
             }
-            System.out.println(output);
+            System.out.println(output.toString());
         } else {
             System.out.println();
         }
