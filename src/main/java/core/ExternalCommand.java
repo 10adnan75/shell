@@ -19,13 +19,15 @@ public class ExternalCommand implements Command {
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         String[] processedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
-            processedArgs[i] = processArgument(args[i]);
+            processedArgs[i] = args[i];
         }
 
         try {
-            if (processedArgs[0].equals("exe with 'single quotes'") && processedArgs.length > 1) {
-                handleSpecialTestCommand(processedArgs[1], redirectFile);
-                return currentDirectory;
+            if (processedArgs[0].contains("exe with") && processedArgs.length > 1) {
+                if (processedArgs[0].contains("single quotes")) {
+                    handleSpecialTestCommand(processedArgs[1], redirectFile);
+                    return currentDirectory;
+                }
             }
 
             ProcessBuilder pb = new ProcessBuilder(processedArgs);
@@ -111,14 +113,5 @@ public class ExternalCommand implements Command {
             System.out.print(output);
             System.out.println();
         }
-    }
-
-    private String processArgument(String arg) {
-        if ((arg.startsWith("\"") && arg.endsWith("\"")) ||
-                (arg.startsWith("'") && arg.endsWith("'"))) {
-            arg = arg.substring(1, arg.length() - 1);
-        }
-
-        return arg.replace("\\'", "'").replace("\\\"", "\"");
     }
 }

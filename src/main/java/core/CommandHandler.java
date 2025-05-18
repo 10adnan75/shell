@@ -32,21 +32,6 @@ public class CommandHandler {
         String[] cmdTokensArray = tokens.toArray(new String[0]);
         String rawCommand = input;
 
-        if ((cmdTokensArray[0].startsWith("\"") && cmdTokensArray[0].endsWith("\"")) ||
-                (cmdTokensArray[0].startsWith("'") && cmdTokensArray[0].endsWith("'"))) {
-            String executable = cmdTokensArray[0].substring(1, cmdTokensArray[0].length() - 1);
-
-            if (cmdTokensArray[0].startsWith("\"")) {
-                executable = executable.replace("\\\"", "\"").replace("\\'", "'");
-            }
-
-            String[] execCmd = new String[cmdTokensArray.length];
-            execCmd[0] = executable;
-            System.arraycopy(cmdTokensArray, 1, execCmd, 1, cmdTokensArray.length - 1);
-
-            return executeCommandWithRedirection(execCmd, rawCommand, currentDirectory, redirectFile);
-        }
-
         return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile);
     }
 

@@ -31,15 +31,11 @@ public class Tokenizer {
                             current.append('\'');
                             break;
                         default:
-                            current.append(c);
+                            current.append('\\').append(c);
                             break;
                     }
                 } else if (inSingle) {
-                    if (c == '\'') {
-                        current.append('\'');
-                    } else {
-                        current.append('\\').append(c);
-                    }
+                    current.append('\\').append(c);
                 } else {
                     switch (c) {
                         case 'n':
@@ -58,13 +54,15 @@ public class Tokenizer {
                             current.append('\'');
                             break;
                         default:
-                            current.append(c);
+                            current.append('\\').append(c);
                             break;
                     }
                 }
                 escape = false;
-            } else if (c == '\\') {
+            } else if (c == '\\' && !inSingle) {
                 escape = true;
+            } else if (c == '\\' && inSingle) {
+                current.append('\\');
             } else if (c == '"' && !inSingle) {
                 inDouble = !inDouble;
             } else if (c == '\'' && !inDouble) {
