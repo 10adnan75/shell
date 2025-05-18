@@ -1,15 +1,14 @@
 package core;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import builtins.Command;
 
 public class ExternalCommand implements Command {
     private final String[] args;
     private final File redirectFile;
+    private static final boolean DEBUG = false;
 
     public ExternalCommand(String[] args, File redirectFile) {
         this.args = args;
@@ -24,31 +23,6 @@ public class ExternalCommand implements Command {
         }
 
         try {
-            if (processedArgs.length > 0 && processedArgs[0].equals("exe with 'single quotes'")) {
-                if (processedArgs.length > 1) {
-                    Path filePath = currentDirectory.resolve(processedArgs[1]);
-                    if (Files.exists(filePath)) {
-                        try (PrintStream out = redirectFile != null
-                                ? new PrintStream(new FileOutputStream(redirectFile))
-                                : System.out) {
-                            List<String> lines = Files.readAllLines(filePath);
-
-                            for (int i = 0; i < lines.size(); i++) {
-                                out.print(lines.get(i));
-                                if (i < lines.size() - 1) {
-                                    out.println();
-                                }
-                            }
-                        }
-                    } else {
-                        System.err.println("File not found: " + filePath);
-                    }
-                } else {
-                    System.err.println("No file specified for reading");
-                }
-                return currentDirectory;
-            }
-
             ProcessBuilder pb = new ProcessBuilder(processedArgs);
             pb.directory(currentDirectory.toFile());
 
@@ -57,6 +31,10 @@ public class ExternalCommand implements Command {
             }
 
             try {
+                if (DEBUG) {
+                    System.err.println("Executing command: " + String.join(" ", processedArgs));
+                }
+
                 Process process = pb.start();
 
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -72,7 +50,11 @@ public class ExternalCommand implements Command {
                     }
                 }
 
-                process.waitFor();
+                int exitCode = process.waitFor();
+                if (DEBUG) {
+                    System.err.println("Process exited with code: " + exitCode);
+                }
+
             } catch (IOException e) {
                 if (e.getMessage().contains("No such file or directory") ||
                         e.getMessage().contains("error=2")) {
@@ -84,6 +66,9 @@ public class ExternalCommand implements Command {
         } catch (Exception e) {
             System.err.println("Error executing command: " + e.getMessage());
         }
+
+        System.out.flush();
+        System.err.flush();
 
         return currentDirectory;
     }
