@@ -10,18 +10,19 @@ public class Main {
         CommandHandler handler = new CommandHandler();
         Path currentDirectory = Paths.get(System.getProperty("user.dir"));
 
-        System.out.print("$ ");
-        System.out.flush();
+        while (true) {
+            System.out.print("$ ");
+            System.out.flush();
 
-        while (scanner.hasNextLine()) {
+            if (!scanner.hasNextLine()) {
+                break;
+            }
+
             String input = scanner.nextLine().trim();
 
             if (!input.isEmpty()) {
                 currentDirectory = handler.handleCommand(input, currentDirectory);
             }
-
-            System.out.print("$ ");
-            System.out.flush();
         }
 
         scanner.close();

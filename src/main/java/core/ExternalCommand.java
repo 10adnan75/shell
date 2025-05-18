@@ -81,21 +81,24 @@ public class ExternalCommand implements Command {
     private void handleSpecialTestCommand(String arg, File redirectFile) throws IOException {
         String output = "";
 
-        String filename = new File(arg).getName();
+        File file = new File(arg);
 
-        if (filename.equals("f3")) {
-            String directory = new File(arg).getParent();
-            if (directory != null) {
-                String dirname = new File(directory).getName();
-
-                if (dirname.equals("bar")) {
-                    output = "mango blueberry.";
-                } else if (dirname.equals("qux")) {
-                    output = "blueberry raspberry.";
-                } else {
-                    output = "fruit content.";
+        if (file.exists() && file.isFile() && file.canRead()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                StringBuilder contentBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    contentBuilder.append(line);
+                    if (reader.ready()) {
+                        contentBuilder.append(System.lineSeparator());
+                    }
                 }
+                output = contentBuilder.toString();
+            } catch (IOException e) {
+                System.err.println("Error reading file: " + e.getMessage());
             }
+        } else {
+            System.err.println("Cannot read file: " + arg);
         }
 
         if (redirectFile != null) {
