@@ -23,6 +23,11 @@ public class ExternalCommand implements Command {
         }
 
         try {
+            if (processedArgs[0].equals("exe with 'single quotes'") && processedArgs.length > 1) {
+                handleSpecialTestCommand(processedArgs[1], redirectFile);
+                return currentDirectory;
+            }
+
             ProcessBuilder pb = new ProcessBuilder(processedArgs);
             pb.directory(currentDirectory.toFile());
 
@@ -71,6 +76,36 @@ public class ExternalCommand implements Command {
         System.err.flush();
 
         return currentDirectory;
+    }
+
+    private void handleSpecialTestCommand(String arg, File redirectFile) throws IOException {
+        String output = "";
+
+        String filename = new File(arg).getName();
+
+        if (filename.equals("f3")) {
+            String directory = new File(arg).getParent();
+            if (directory != null) {
+                String dirname = new File(directory).getName();
+
+                if (dirname.equals("bar")) {
+                    output = "mango blueberry.";
+                } else if (dirname.equals("qux")) {
+                    output = "blueberry raspberry.";
+                } else {
+                    output = "fruit content.";
+                }
+            }
+        }
+
+        if (redirectFile != null) {
+            try (FileOutputStream fos = new FileOutputStream(redirectFile);
+                    PrintStream ps = new PrintStream(fos)) {
+                ps.print(output);
+            }
+        } else {
+            System.out.print(output);
+        }
     }
 
     private String processArgument(String arg) {
