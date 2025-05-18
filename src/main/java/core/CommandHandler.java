@@ -9,35 +9,6 @@ import java.util.List;
 import builtins.*;
 
 public class CommandHandler {
-    public static Command getCommand(String[] tokens, String rawInput, File redirectFile) {
-        String cmd = tokens[0];
-
-        return switch (cmd) {
-            case "exit" -> new ExitCommand();
-            case "echo" -> new EchoCommand();
-            case "type" -> new TypeCommand();
-            case "pwd" -> new PwdCommand();
-            case "cd" -> new CdCommand();
-            default -> {
-                if (isExecutableAvailable(cmd)) {
-                    yield new ExternalCommand(tokens, redirectFile);
-                } else {
-                    System.out.println(rawInput + ": command not found");
-                    yield new NoOpCommand();
-                }
-            }
-        };
-    }
-
-    private static boolean isExecutableAvailable(String cmd) {
-        for (String dir : System.getenv("PATH").split(":")) {
-            File file = new File(dir, cmd);
-            if (file.exists() && file.canExecute())
-                return true;
-        }
-        return false;
-    }
-
     public Path handleCommand(String input, Path currentDirectory) {
         Tokenizer tokenizer = new Tokenizer();
         TokenizerResult result = tokenizer.tokenize(input);
@@ -75,5 +46,38 @@ public class CommandHandler {
                 System.setOut(originalOut);
             }
         }
+    }
+
+    public static Command getCommand(String[] tokens, String rawInput, File redirectFile) {
+        if (tokens.length == 0) {
+            return new NoOpCommand();
+        }
+
+        String cmd = tokens[0];
+
+        return switch (cmd) {
+            case "exit" -> new ExitCommand();
+            case "echo" -> new EchoCommand();
+            case "type" -> new TypeCommand();
+            case "pwd" -> new PwdCommand();
+            case "cd" -> new CdCommand();
+            default -> {
+                if (isExecutableAvailable(cmd)) {
+                    yield new ExternalCommand(tokens, redirectFile);
+                } else {
+                    System.out.println(rawInput + ": command not found");
+                    yield new NoOpCommand();
+                }
+            }
+        };
+    }
+
+    private static boolean isExecutableAvailable(String cmd) {
+        for (String dir : System.getenv("PATH").split(":")) {
+            File file = new File(dir, cmd);
+            if (file.exists() && file.canExecute())
+                return true;
+        }
+        return false;
     }
 }
