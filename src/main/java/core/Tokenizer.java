@@ -28,14 +28,13 @@ public class Tokenizer {
                             current.append('\\');
                             break;
                         case '\'':
-                            current.append('\'');
+                            current.append("\\'");
                             break;
                         default:
                             current.append(c);
                             break;
                     }
-                } else {
-
+                } else if (inSingle) {
                     if (c == '\'') {
                         current.append('\'');
                     } else {
@@ -76,7 +75,6 @@ public class Tokenizer {
 
         if (redirectIndex != -1 && redirectIndex + 1 < result.tokens.size()) {
             result.redirectTarget = result.tokens.get(redirectIndex + 1);
-
             result.tokens = result.tokens.subList(0, redirectIndex);
         }
 

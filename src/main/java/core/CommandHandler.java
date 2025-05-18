@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import builtins.*;
@@ -18,6 +19,11 @@ public class CommandHandler {
 
         if (result.isRedirect) {
             redirectFile = new File(result.redirectTarget);
+            
+            File parentDir = redirectFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
         }
 
         if (tokens.isEmpty()) {
@@ -26,24 +32,34 @@ public class CommandHandler {
 
         String[] cmdTokensArray = tokens.toArray(new String[0]);
         String rawCommand = input;
-        String command = cmdTokensArray[0];
+
+        if (cmdTokensArray[0].startsWith("\"") && cmdTokensArray[0].endsWith("\"")) {
+            String executable = cmdTokensArray[0].substring(1, cmdTokensArray[0].length() - 1);
+
+            executable = executable.replace("\\'", "'").replace("\\\"", "\"");
+
+            String[] execCmd = new String[cmdTokensArray.length];
+            execCmd[0] = executable;
+            System.arraycopy(cmdTokensArray, 1, execCmd, 1, cmdTokensArray.length - 1);
+
+            return executeCommandWithRedirection(execCmd, rawCommand, currentDirectory, redirectFile);
+        }
+
+        return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile);
+    }
+
+    private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
+            Path currentDirectory, File redirectFile) {
         Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile);
+
+        boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
+                cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
+                cmd instanceof PwdCommand);
 
         PrintStream originalOut = System.out;
         try {
-            if (redirectFile != null) {
-                File parentDir = redirectFile.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
-                }
-
-                boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
-                        cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
-                        cmd instanceof PwdCommand);
-
-                if (isBuiltin) {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile)));
-                }
+            if (redirectFile != null && isBuiltin) {
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile)));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
@@ -51,9 +67,7 @@ public class CommandHandler {
             System.err.println("Execution error: " + e.getMessage());
             return currentDirectory;
         } finally {
-            if (redirectFile != null && (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
-                    cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
-                    cmd instanceof PwdCommand)) {
+            if (redirectFile != null && isBuiltin) {
                 System.setOut(originalOut);
             }
         }
@@ -66,18 +80,6 @@ public class CommandHandler {
 
         String cmd = tokens[0];
 
-        if (cmd.startsWith("\"") && cmd.endsWith("\"")) {
-            String executableName = cmd.substring(1, cmd.length() - 1);
-            File file = new File(executableName);
-
-            if (file.exists() && file.canExecute()) {
-                String[] newTokens = new String[tokens.length];
-                newTokens[0] = executableName;
-                System.arraycopy(tokens, 1, newTokens, 1, tokens.length - 1);
-                return new ExternalCommand(newTokens, redirectFile);
-            }
-        }
-
         return switch (cmd) {
             case "exit" -> new ExitCommand();
             case "echo" -> new EchoCommand();
@@ -88,12 +90,12 @@ public class CommandHandler {
                 if (isExecutableAvailable(cmd)) {
                     yield new ExternalCommand(tokens, redirectFile);
                 } else {
-                    File file = new File(cmd);
+                    Path cmdPath = Paths.get(cmd);
+                    File file = cmdPath.toFile();
                     if (file.exists() && file.canExecute()) {
                         yield new ExternalCommand(tokens, redirectFile);
                     } else {
-                        System.out.println(rawInput + ": command not found");
-                        yield new NoOpCommand();
+                        yield new ExternalCommand(tokens, redirectFile);
                     }
                 }
             }
@@ -101,10 +103,6 @@ public class CommandHandler {
     }
 
     private static boolean isExecutableAvailable(String cmd) {
-        if (cmd.startsWith("\"") && cmd.endsWith("\"")) {
-            cmd = cmd.substring(1, cmd.length() - 1);
-        }
-
         for (String dir : System.getenv("PATH").split(":")) {
             File file = new File(dir, cmd);
             if (file.exists() && file.canExecute())

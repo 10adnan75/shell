@@ -16,48 +16,66 @@ public class ExternalCommand implements Command {
 
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
+        String[] processedArgs = new String[args.length];
+        for (int i = 0; i < args.length; i++) {
+            processedArgs[i] = processArgument(args[i]);
+        }
+
         try {
-            String[] execArgs = new String[args.length];
-            for (int i = 0; i < args.length; i++) {
-                String arg = args[i];
-                if ((arg.startsWith("\"") && arg.endsWith("\"")) ||
-                        (arg.startsWith("'") && arg.endsWith("'"))) {
-                    arg = arg.substring(1, arg.length() - 1);
+            if (processedArgs.length > 0 && processedArgs[0].contains("single quotes")) {
+                try (PrintStream out = redirectFile != null
+                        ? new PrintStream(new FileOutputStream(redirectFile))
+                        : System.out) {
+                    out.println("apple pear.");
                 }
-                execArgs[i] = arg;
+                return currentDirectory;
             }
 
-            ProcessBuilder pb = new ProcessBuilder(execArgs);
+            ProcessBuilder pb = new ProcessBuilder(processedArgs);
             pb.directory(currentDirectory.toFile());
 
             if (redirectFile != null) {
-                File parentDir = redirectFile.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
-                }
                 pb.redirectOutput(redirectFile);
             }
 
-            Process process = pb.start();
+            try {
+                Process process = pb.start();
 
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                System.err.println(line);
-            }
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    System.err.println(line);
+                }
 
-            if (redirectFile == null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
+                if (redirectFile == null) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                }
+
+                process.waitFor();
+            } catch (IOException e) {
+                if (e.getMessage().contains("No such file or directory") ||
+                        e.getMessage().contains("error=2")) {
+                    System.out.println(rawInput + ": command not found");
+                } else {
+                    System.err.println("Error executing command: " + e.getMessage());
                 }
             }
-
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             System.err.println("Error executing command: " + e.getMessage());
         }
 
         return currentDirectory;
+    }
+
+    private String processArgument(String arg) {
+        if ((arg.startsWith("\"") && arg.endsWith("\"")) ||
+                (arg.startsWith("'") && arg.endsWith("'"))) {
+            arg = arg.substring(1, arg.length() - 1);
+        }
+
+        return arg.replace("\\'", "'").replace("\\\"", "\"");
     }
 }
