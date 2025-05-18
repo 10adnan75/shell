@@ -3,6 +3,7 @@ package core;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import builtins.Command;
 
@@ -30,7 +31,10 @@ public class ExternalCommand implements Command {
                         try (PrintStream out = redirectFile != null
                                 ? new PrintStream(new FileOutputStream(redirectFile))
                                 : System.out) {
-                            Files.lines(filePath).forEach(out::println);
+                            List<String> lines = Files.readAllLines(filePath);
+                            for (String line : lines) {
+                                out.println(line);
+                            }
                         }
                     } else {
                         System.err.println("File not found: " + filePath);
