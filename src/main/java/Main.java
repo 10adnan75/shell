@@ -12,6 +12,8 @@ public class Main {
 
         while (true) {
             System.out.print("$ ");
+            System.out.flush();
+
             String input = scanner.nextLine().trim();
             if (input.isEmpty())
                 continue;
