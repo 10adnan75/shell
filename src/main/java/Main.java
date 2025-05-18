@@ -23,5 +23,7 @@ public class Main {
             System.out.print("$ ");
             System.out.flush();
         }
+
+        scanner.close();
     }
 }

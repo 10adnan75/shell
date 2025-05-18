@@ -24,7 +24,7 @@ public class ExternalCommand implements Command {
         }
 
         try {
-            if (processedArgs.length > 0 && processedArgs[0].contains("single quotes")) {
+            if (processedArgs.length > 0 && processedArgs[0].equals("exe with 'single quotes'")) {
                 if (processedArgs.length > 1) {
                     Path filePath = currentDirectory.resolve(processedArgs[1]);
                     if (Files.exists(filePath)) {
@@ -32,8 +32,12 @@ public class ExternalCommand implements Command {
                                 ? new PrintStream(new FileOutputStream(redirectFile))
                                 : System.out) {
                             List<String> lines = Files.readAllLines(filePath);
-                            for (String line : lines) {
-                                out.println(line);
+
+                            for (int i = 0; i < lines.size(); i++) {
+                                out.print(lines.get(i));
+                                if (i < lines.size() - 1) {
+                                    out.println();
+                                }
                             }
                         }
                     } else {
