@@ -13,7 +13,7 @@ public class Tokenizer {
             char c = input.charAt(i);
 
             if (escape) {
-                if (inDouble || (!inSingle && !inDouble)) {
+                if (inDouble) {
                     switch (c) {
                         case 'n':
                             current.append('\n');
@@ -28,7 +28,7 @@ public class Tokenizer {
                             current.append('\\');
                             break;
                         case '\'':
-                            current.append("\\'");
+                            current.append('\'');
                             break;
                         default:
                             current.append(c);
@@ -39,6 +39,27 @@ public class Tokenizer {
                         current.append('\'');
                     } else {
                         current.append('\\').append(c);
+                    }
+                } else {
+                    switch (c) {
+                        case 'n':
+                            current.append('\n');
+                            break;
+                        case 't':
+                            current.append('\t');
+                            break;
+                        case '"':
+                            current.append('"');
+                            break;
+                        case '\\':
+                            current.append('\\');
+                            break;
+                        case '\'':
+                            current.append('\'');
+                            break;
+                        default:
+                            current.append(c);
+                            break;
                     }
                 }
                 escape = false;
