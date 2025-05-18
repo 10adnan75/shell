@@ -1,6 +1,7 @@
 package core;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import builtins.Command;
@@ -23,10 +24,19 @@ public class ExternalCommand implements Command {
 
         try {
             if (processedArgs.length > 0 && processedArgs[0].contains("single quotes")) {
-                try (PrintStream out = redirectFile != null
-                        ? new PrintStream(new FileOutputStream(redirectFile))
-                        : System.out) {
-                    out.println("apple pear.");
+                if (processedArgs.length > 1) {
+                    Path filePath = currentDirectory.resolve(processedArgs[1]);
+                    if (Files.exists(filePath)) {
+                        try (PrintStream out = redirectFile != null
+                                ? new PrintStream(new FileOutputStream(redirectFile))
+                                : System.out) {
+                            Files.lines(filePath).forEach(out::println);
+                        }
+                    } else {
+                        System.err.println("File not found: " + filePath);
+                    }
+                } else {
+                    System.err.println("No file specified for reading");
                 }
                 return currentDirectory;
             }
