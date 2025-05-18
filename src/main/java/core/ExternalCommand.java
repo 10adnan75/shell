@@ -17,10 +17,24 @@ public class ExternalCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         try {
-            ProcessBuilder pb = new ProcessBuilder(args);
+            String[] execArgs = new String[args.length];
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
+                if ((arg.startsWith("\"") && arg.endsWith("\"")) ||
+                        (arg.startsWith("'") && arg.endsWith("'"))) {
+                    arg = arg.substring(1, arg.length() - 1);
+                }
+                execArgs[i] = arg;
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(execArgs);
             pb.directory(currentDirectory.toFile());
 
             if (redirectFile != null) {
+                File parentDir = redirectFile.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
                 pb.redirectOutput(redirectFile);
             }
 
@@ -41,7 +55,7 @@ public class ExternalCommand implements Command {
 
             process.waitFor();
         } catch (IOException | InterruptedException e) {
-            System.out.println("Error executing command: " + e.getMessage());
+            System.err.println("Error executing command: " + e.getMessage());
         }
 
         return currentDirectory;

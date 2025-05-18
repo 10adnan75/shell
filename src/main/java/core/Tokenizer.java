@@ -35,7 +35,12 @@ public class Tokenizer {
                             break;
                     }
                 } else {
-                    current.append('\\').append(c);
+
+                    if (c == '\'') {
+                        current.append('\'');
+                    } else {
+                        current.append('\\').append(c);
+                    }
                 }
                 escape = false;
             } else if (c == '\\') {
@@ -71,6 +76,7 @@ public class Tokenizer {
 
         if (redirectIndex != -1 && redirectIndex + 1 < result.tokens.size()) {
             result.redirectTarget = result.tokens.get(redirectIndex + 1);
+
             result.tokens = result.tokens.subList(0, redirectIndex);
         }
 
