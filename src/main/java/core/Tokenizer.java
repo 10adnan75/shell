@@ -54,7 +54,7 @@ public class Tokenizer {
                             current.append('\'');
                             break;
                         default:
-                            current.append('\\').append(c);
+                            current.append(c);
                             break;
                     }
                 }
