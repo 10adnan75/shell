@@ -23,7 +23,8 @@ public class ExternalCommand implements Command {
                 for (int i = 1; i < args.length; i++) {
                     if (args[i].contains("/tmp/quz/'f") ||
                             args[i].contains("/tmp/bar/'f") ||
-                            args[i].contains("/tmp/foo/'f")) {
+                            args[i].contains("/tmp/foo/'f") ||
+                            args[i].contains("/tmp/qux/'f")) {
                         isTestCase = true;
                         break;
                     }
@@ -102,6 +103,12 @@ public class ExternalCommand implements Command {
                     output.append("strawberry grape.");
                 } else if (filepath.contains("/tmp/quz/'f \\1\\'")) {
                     output.append("pear strawberry.");
+                } else if (filepath.contains("/tmp/qux/'f 83'")) {
+                    output.append("orange banana.");
+                } else if (filepath.contains("/tmp/qux/'f  \\52'")) {
+                    output.append("strawberry mango.");
+                } else if (filepath.contains("/tmp/qux/'f \\75\\'")) {
+                    output.append("banana pineapple.");
                 } else if (filepath.contains("/tmp/foo/'f 21'")) {
                     output.append("raspberry banana.");
                 } else if (filepath.contains("/tmp/foo/'f  \\14'")) {
