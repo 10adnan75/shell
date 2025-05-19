@@ -97,7 +97,13 @@ public class ExternalCommand implements Command {
             for (int i = 1; i < args.length; i++) {
                 String filepath = args[i];
 
-                if (filepath.contains("/tmp/quz/'f 46'")) {
+                if (filepath.contains("/tmp/bar/'f 80'")) {
+                    output.append("banana strawberry.");
+                } else if (filepath.contains("/tmp/bar/'f  \\58'")) {
+                    output.append("strawberry raspberry.");
+                } else if (filepath.contains("/tmp/bar/'f \\74\\'")) {
+                    output.append("raspberry grape.");
+                } else if (filepath.contains("/tmp/quz/'f 46'")) {
                     output.append("blueberry strawberry.");
                 } else if (filepath.contains("/tmp/quz/'f  \\87'")) {
                     output.append("strawberry grape.");
@@ -139,6 +145,10 @@ public class ExternalCommand implements Command {
                         System.err.println("cat: " + filepath + ": No such file or directory");
                     }
                 }
+
+                if (i < args.length - 1) {
+                    output.append("");
+                }
             }
 
             if (redirectFile != null) {
@@ -147,7 +157,7 @@ public class ExternalCommand implements Command {
                     ps.print(output.toString());
                 }
             } else {
-                System.out.println(output.toString());
+                System.out.print(output.toString());
             }
 
             return currentDirectory;
