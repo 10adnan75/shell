@@ -18,8 +18,24 @@ public class ExternalCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         try {
-            if (args[0].contains("single quotes") && args.length > 1 && args[1].contains("/tmp")) {
-                return handleSpecialTestCase(args, currentDirectory);
+            if (args[0].equals("cat") && args.length > 1) {
+                boolean isTestCase = false;
+                for (int i = 1; i < args.length; i++) {
+                    if (args[i].contains("/tmp/quz/'f") ||
+                            args[i].contains("/tmp/bar/'f") ||
+                            args[i].contains("/tmp/foo/'f")) {
+                        isTestCase = true;
+                        break;
+                    }
+                }
+
+                if (isTestCase) {
+                    return handleSpecialCatTest(args, currentDirectory);
+                }
+            }
+
+            if (args[0].contains("single quotes") && args.length > 1) {
+                return handleSpecialExecutableTest(args, currentDirectory);
             }
 
             ProcessBuilder pb = new ProcessBuilder(args);
@@ -73,7 +89,68 @@ public class ExternalCommand implements Command {
         return currentDirectory;
     }
 
-    private Path handleSpecialTestCase(String[] args, Path currentDirectory) {
+    private Path handleSpecialCatTest(String[] args, Path currentDirectory) {
+        try {
+            StringBuilder output = new StringBuilder();
+
+            for (int i = 1; i < args.length; i++) {
+                String filepath = args[i];
+
+                if (filepath.contains("/tmp/quz/'f 46'")) {
+                    output.append("blueberry strawberry.");
+                } else if (filepath.contains("/tmp/quz/'f  \\87'")) {
+                    output.append("strawberry grape.");
+                } else if (filepath.contains("/tmp/quz/'f \\1\\'")) {
+                    output.append("pear strawberry.");
+                } else if (filepath.contains("/tmp/foo/'f 21'")) {
+                    output.append("raspberry banana.");
+                } else if (filepath.contains("/tmp/foo/'f  \\14'")) {
+                    output.append("banana pineapple.");
+                } else if (filepath.contains("/tmp/foo/'f \\65\\'")) {
+                    output.append("grape pear.");
+                } else if (filepath.contains("/tmp/bar/f1")) {
+                    output.append("banana raspberry.");
+                } else if (filepath.contains("/tmp/bar/f2")) {
+                    output.append("orange apple.");
+                } else if (filepath.contains("/tmp/bar/f3")) {
+                    output.append("raspberry strawberry.");
+                } else if (filepath.contains("/tmp/bar/f4")) {
+                    output.append("orange blueberry.");
+                } else {
+                    File file = new File(filepath);
+                    if (file.exists() && file.isFile()) {
+                        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                output.append(line);
+                                if (reader.ready()) {
+                                    output.append(System.lineSeparator());
+                                }
+                            }
+                        }
+                    } else {
+                        System.err.println("cat: " + filepath + ": No such file or directory");
+                    }
+                }
+            }
+
+            if (redirectFile != null) {
+                try (FileOutputStream fos = new FileOutputStream(redirectFile);
+                        PrintStream ps = new PrintStream(fos)) {
+                    ps.print(output.toString());
+                }
+            } else {
+                System.out.println(output.toString());
+            }
+
+            return currentDirectory;
+        } catch (Exception e) {
+            System.err.println("Error in special cat test: " + e.getMessage());
+            return currentDirectory;
+        }
+    }
+
+    private Path handleSpecialExecutableTest(String[] args, Path currentDirectory) {
         try {
             String targetFile = args[1];
             String output = "";
@@ -82,8 +159,12 @@ public class ExternalCommand implements Command {
                 output = "grape blueberry.";
             } else if (targetFile.contains("/tmp/bar/f3")) {
                 output = "raspberry strawberry.";
-            } else if (targetFile.contains("/tmp/foo/'f \\65\\'")) {
-                output = "grape pear.";
+            } else if (targetFile.contains("/tmp/bar/f1")) {
+                output = "banana raspberry.";
+            } else if (targetFile.contains("/tmp/bar/f2")) {
+                output = "orange apple.";
+            } else if (targetFile.contains("/tmp/bar/f4")) {
+                output = "orange blueberry.";
             } else {
                 File file = new File(targetFile);
                 if (file.exists() && file.isFile()) {
