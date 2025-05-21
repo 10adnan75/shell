@@ -8,11 +8,19 @@ import builtins.Command;
 public class ExternalCommand implements Command {
     private final String[] args;
     private final File redirectFile;
+    private final File stderrRedirectFile;
     private static final boolean DEBUG = false;
 
     public ExternalCommand(String[] args, File redirectFile) {
         this.args = args;
         this.redirectFile = redirectFile;
+        this.stderrRedirectFile = null;
+    }
+
+    public ExternalCommand(String[] args, File redirectFile, File stderrRedirectFile) {
+        this.args = args;
+        this.redirectFile = redirectFile;
+        this.stderrRedirectFile = stderrRedirectFile;
     }
 
     @Override
@@ -29,6 +37,14 @@ public class ExternalCommand implements Command {
                 pb.redirectOutput(redirectFile);
             }
 
+            if (stderrRedirectFile != null) {
+                File parentDir = stderrRedirectFile.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+                pb.redirectError(stderrRedirectFile);
+            }
+
             if (DEBUG) {
                 System.err.println("Executing command: " + String.join(" ", this.args));
             }
@@ -38,7 +54,9 @@ public class ExternalCommand implements Command {
             if (redirectFile == null) {
                 process.getInputStream().transferTo(System.out);
             }
-            process.getErrorStream().transferTo(System.err);
+            if (stderrRedirectFile == null) {
+                process.getErrorStream().transferTo(System.err);
+            }
 
             int exitCode = process.waitFor();
             if (DEBUG) {
@@ -48,15 +66,47 @@ public class ExternalCommand implements Command {
         } catch (IOException e) {
             if (e.getMessage().contains("No such file or directory") ||
                     e.getMessage().contains("error=2")) {
-                System.err.println(this.args[0] + ": command not found");
+                if (stderrRedirectFile != null) {
+                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                        ps.println(this.args[0] + ": command not found");
+                    } catch (IOException ex) {
+                        System.err.println("Error writing to stderr file: " + ex.getMessage());
+                    }
+                } else {
+                    System.err.println(this.args[0] + ": command not found");
+                }
+            } else {
+                if (stderrRedirectFile != null) {
+                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                        ps.println("Error executing command: " + e.getMessage());
+                    } catch (IOException ex) {
+                        System.err.println("Error writing to stderr file: " + ex.getMessage());
+                    }
+                } else {
+                    System.err.println("Error executing command: " + e.getMessage());
+                }
+            }
+        } catch (InterruptedException e) {
+            if (stderrRedirectFile != null) {
+                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                    ps.println("Command execution interrupted: " + e.getMessage());
+                } catch (IOException ex) {
+                    System.err.println("Error writing to stderr file: " + ex.getMessage());
+                }
+            } else {
+                System.err.println("Command execution interrupted: " + e.getMessage());
+            }
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            if (stderrRedirectFile != null) {
+                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                    ps.println("Error executing command: " + e.getMessage());
+                } catch (IOException ex) {
+                    System.err.println("Error writing to stderr file: " + ex.getMessage());
+                }
             } else {
                 System.err.println("Error executing command: " + e.getMessage());
             }
-        } catch (InterruptedException e) {
-            System.err.println("Command execution interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            System.err.println("Error executing command: " + e.getMessage());
         }
 
         System.out.flush();

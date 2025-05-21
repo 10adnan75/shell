@@ -47,7 +47,7 @@ public class CommandHandler {
 
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
             Path currentDirectory, File redirectFile, File stderrRedirectFile) {
-        Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile);
+        Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
 
         boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
                 cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
@@ -77,7 +77,7 @@ public class CommandHandler {
         }
     }
 
-    public static Command getCommand(String[] tokens, String rawInput, File redirectFile) {
+    public static Command getCommand(String[] tokens, String rawInput, File redirectFile, File stderrRedirectFile) {
         if (tokens.length == 0) {
             return new NoOpCommand();
         }
@@ -108,7 +108,7 @@ public class CommandHandler {
                         tokens[i] = tokens[i].substring(1, tokens[i].length() - 1);
                     }
                 }
-                yield new ExternalCommand(tokens, redirectFile);
+                yield new ExternalCommand(tokens, redirectFile, stderrRedirectFile);
             }
         };
     }
