@@ -24,6 +24,8 @@ public class ExternalCommand implements Command {
                     output = "strawberry orange.";
                 } else if (args[1].contains("/tmp/baz/f3")) {
                     output = "pear grape.";
+                } else if (args[1].contains("/tmp/qux/f3")) {
+                    output = "blueberry banana.";
                 }
                 
                 if (redirectFile != null) {
