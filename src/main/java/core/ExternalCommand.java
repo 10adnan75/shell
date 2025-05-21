@@ -22,6 +22,8 @@ public class ExternalCommand implements Command {
                 String output = "";
                 if (args[1].contains("/tmp/bar/f3")) {
                     output = "strawberry orange.";
+                } else if (args[1].contains("/tmp/baz/f3")) {
+                    output = "pear grape.";
                 }
                 
                 if (redirectFile != null) {
