@@ -8,6 +8,8 @@ public class TokenizerResult {
     public String stderrRedirectTarget = null;
     public boolean isRedirect = false;
     public boolean isStderrRedirect = false;
+    public boolean isAppend = false;
+    public boolean isStderrAppend = false;
 
     public TokenizerResult(List<String> tokens) {
         this.tokens = tokens;

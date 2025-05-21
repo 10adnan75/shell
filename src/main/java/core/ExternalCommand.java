@@ -2,22 +2,23 @@ package core;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.List;
 
 import builtins.Command;
 
 public class ExternalCommand implements Command {
-    private final String[] args;
+    private final List<String> args;
     private final File redirectFile;
     private final File stderrRedirectFile;
     private static final boolean DEBUG = false;
 
-    public ExternalCommand(String[] args, File redirectFile) {
+    public ExternalCommand(List<String> args, File redirectFile) {
         this.args = args;
         this.redirectFile = redirectFile;
         this.stderrRedirectFile = null;
     }
 
-    public ExternalCommand(String[] args, File redirectFile, File stderrRedirectFile) {
+    public ExternalCommand(List<String> args, File redirectFile, File stderrRedirectFile) {
         this.args = args;
         this.redirectFile = redirectFile;
         this.stderrRedirectFile = stderrRedirectFile;
@@ -28,19 +29,18 @@ public class ExternalCommand implements Command {
         try {
             ProcessBuilder pb = new ProcessBuilder(this.args);
             pb.directory(currentDirectory.toFile());
+            pb.redirectErrorStream(false);
 
             if (redirectFile != null) {
-                File parentDir = redirectFile.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
+                if (!redirectFile.getParentFile().exists()) {
+                    redirectFile.getParentFile().mkdirs();
                 }
                 pb.redirectOutput(redirectFile);
             }
 
             if (stderrRedirectFile != null) {
-                File parentDir = stderrRedirectFile.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
+                if (!stderrRedirectFile.getParentFile().exists()) {
+                    stderrRedirectFile.getParentFile().mkdirs();
                 }
                 pb.redirectError(stderrRedirectFile);
             }
@@ -68,12 +68,12 @@ public class ExternalCommand implements Command {
                     e.getMessage().contains("error=2")) {
                 if (stderrRedirectFile != null) {
                     try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
-                        ps.println(this.args[0] + ": command not found");
+                        ps.println(this.args.get(0) + ": command not found");
                     } catch (IOException ex) {
                         System.err.println("Error writing to stderr file: " + ex.getMessage());
                     }
                 } else {
-                    System.err.println(this.args[0] + ": command not found");
+                    System.err.println(this.args.get(0) + ": command not found");
                 }
             } else {
                 if (stderrRedirectFile != null) {
@@ -113,5 +113,35 @@ public class ExternalCommand implements Command {
         System.err.flush();
 
         return currentDirectory;
+    }
+
+    public void execute(File redirectFile, File stderrRedirectFile, boolean isAppend) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(this.args);
+        pb.redirectErrorStream(false);
+
+        if (redirectFile != null) {
+            if (!redirectFile.getParentFile().exists()) {
+                redirectFile.getParentFile().mkdirs();
+            }
+            if (isAppend) {
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(redirectFile));
+            } else {
+                pb.redirectOutput(redirectFile);
+            }
+        }
+
+        if (stderrRedirectFile != null) {
+            if (!stderrRedirectFile.getParentFile().exists()) {
+                stderrRedirectFile.getParentFile().mkdirs();
+            }
+            pb.redirectError(stderrRedirectFile);
+        }
+
+        try {
+            Process process = pb.start();
+            process.waitFor();
+        } catch (InterruptedException e) {
+            throw new IOException("Command execution interrupted", e);
+        }
     }
 }

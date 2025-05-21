@@ -5,11 +5,34 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.HashMap;
 
-import builtins.*;
+import builtins.Command;
+import builtins.EchoCommand;
+import builtins.ExitCommand;
+import builtins.PwdCommand;
+import builtins.CdCommand;
+import builtins.TypeCommand;
+import builtins.NoOpCommand;
 
 public class CommandHandler {
+    private final Map<String, Command> builtinCommands;
+    private Path currentDirectory;
+
+    public CommandHandler() {
+        this.builtinCommands = new HashMap<>();
+        this.builtinCommands.put("echo", new EchoCommand());
+        this.builtinCommands.put("exit", new ExitCommand());
+        this.builtinCommands.put("pwd", new PwdCommand());
+        this.builtinCommands.put("cd", new CdCommand());
+        this.builtinCommands.put("type", new TypeCommand());
+        this.currentDirectory = Paths.get(System.getProperty("user.dir"));
+    }
+
     public Path handleCommand(String input, Path currentDirectory) {
         Tokenizer tokenizer = new Tokenizer();
         TokenizerResult result = tokenizer.tokenize(input);
@@ -35,18 +58,18 @@ public class CommandHandler {
         }
 
         if (tokens.isEmpty()) {
-            return currentDirectory;
+            return this.currentDirectory;
         }
 
         String[] cmdTokensArray = tokens.toArray(new String[0]);
         String rawCommand = input;
 
         return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile,
-                stderrRedirectFile);
+                stderrRedirectFile, result.isAppend);
     }
 
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
-            Path currentDirectory, File redirectFile, File stderrRedirectFile) {
+            Path currentDirectory, File redirectFile, File stderrRedirectFile, boolean isAppend) {
         Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
 
         boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
@@ -57,7 +80,7 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                System.setOut(new PrintStream(new FileOutputStream(redirectFile)));
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend)));
             }
             if (stderrRedirectFile != null && isBuiltin) {
                 System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile)));
@@ -66,7 +89,7 @@ public class CommandHandler {
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
         } catch (Exception e) {
             System.err.println("Execution error: " + e.getMessage());
-            return currentDirectory;
+            return this.currentDirectory;
         } finally {
             if (redirectFile != null && isBuiltin) {
                 System.setOut(originalOut);
@@ -108,7 +131,7 @@ public class CommandHandler {
                         tokens[i] = tokens[i].substring(1, tokens[i].length() - 1);
                     }
                 }
-                yield new ExternalCommand(tokens, redirectFile, stderrRedirectFile);
+                yield new ExternalCommand(Arrays.asList(tokens), redirectFile, stderrRedirectFile);
             }
         };
     }

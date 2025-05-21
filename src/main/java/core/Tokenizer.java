@@ -148,6 +148,14 @@ public class Tokenizer {
                     result.tokens = result.tokens.subList(0, j);
                     break;
                 }
+            } else if (token.equals(">>") || token.equals("1>>")) {
+                if (j + 1 < result.tokens.size()) {
+                    result.isRedirect = true;
+                    result.isAppend = true;
+                    result.redirectTarget = result.tokens.get(j + 1);
+                    result.tokens = result.tokens.subList(0, j);
+                    break;
+                }
             } else if (token.equals("2>")) {
                 if (j + 1 < result.tokens.size()) {
                     result.isStderrRedirect = true;
