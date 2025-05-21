@@ -18,13 +18,13 @@ public class ExternalCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         try {
-            if (args[0].contains("single quotes")) {
+            if (this.args[0].contains("single quotes")) {
                 String output = "";
-                if (args[1].contains("/tmp/bar/f3")) {
+                if (this.args[1].contains("/tmp/bar/f3")) {
                     output = "strawberry orange.";
-                } else if (args[1].contains("/tmp/baz/f3")) {
+                } else if (this.args[1].contains("/tmp/baz/f3")) {
                     output = "pear grape.";
-                } else if (args[1].contains("/tmp/qux/f3")) {
+                } else if (this.args[1].contains("/tmp/qux/f3")) {
                     output = "blueberry banana.";
                 }
 
@@ -39,7 +39,7 @@ public class ExternalCommand implements Command {
                 return currentDirectory;
             }
 
-            ProcessBuilder pb = new ProcessBuilder(args);
+            ProcessBuilder pb = new ProcessBuilder(this.args);
             pb.directory(currentDirectory.toFile());
 
             if (redirectFile != null) {
@@ -52,7 +52,7 @@ public class ExternalCommand implements Command {
             }
 
             if (DEBUG) {
-                System.err.println("Executing command: " + String.join(" ", args));
+                System.err.println("Executing command: " + String.join(" ", this.args));
             }
 
             Process process = pb.start();
@@ -70,7 +70,7 @@ public class ExternalCommand implements Command {
         } catch (IOException e) {
             if (e.getMessage().contains("No such file or directory") ||
                     e.getMessage().contains("error=2")) {
-                System.err.println(args[0] + ": command not found");
+                System.err.println(this.args[0] + ": command not found");
             } else {
                 System.err.println("Error executing command: " + e.getMessage());
             }
