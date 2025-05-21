@@ -11,13 +11,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import builtins.Command;
-import builtins.EchoCommand;
-import builtins.ExitCommand;
-import builtins.PwdCommand;
-import builtins.CdCommand;
-import builtins.TypeCommand;
-import builtins.NoOpCommand;
+import builtins.*;
 
 public class CommandHandler {
     private final Map<String, Command> builtinCommands;
@@ -80,7 +74,15 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                if (cmd instanceof EchoCommand && !isAppend) {
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
+                        @Override
+                        public void println() {
+                        }
+                    });
+                } else {
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                }
             }
             if (stderrRedirectFile != null && isBuiltin) {
                 System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile), true));
