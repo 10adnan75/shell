@@ -74,19 +74,21 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                if (cmd instanceof EchoCommand && !isAppend) {
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
+                        @Override
+                        public void println() {
+                        }
+                    });
+                } else {
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                }
             }
             if (stderrRedirectFile != null && isBuiltin) {
                 System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile), true));
             }
 
-            Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
-
-            if (redirectFile != null && isBuiltin && !isAppend) {
-                System.out.println();
-            }
-
-            return result;
+            return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
         } catch (Exception e) {
             System.err.println("Execution error: " + e.getMessage());
             return this.currentDirectory;
