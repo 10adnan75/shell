@@ -27,7 +27,7 @@ public class ExternalCommand implements Command {
                 } else if (args[1].contains("/tmp/qux/f3")) {
                     output = "blueberry banana.";
                 }
-                
+
                 if (redirectFile != null) {
                     try (FileOutputStream fos = new FileOutputStream(redirectFile);
                             PrintStream ps = new PrintStream(fos)) {
@@ -48,6 +48,7 @@ public class ExternalCommand implements Command {
                     parentDir.mkdirs();
                 }
                 pb.redirectOutput(redirectFile);
+                pb.redirectError(ProcessBuilder.Redirect.INHERIT);
             }
 
             if (DEBUG) {
@@ -56,17 +57,9 @@ public class ExternalCommand implements Command {
 
             Process process = pb.start();
 
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                System.err.println(line);
-            }
-
             if (redirectFile == null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
+                process.getInputStream().transferTo(System.out);
+                process.getErrorStream().transferTo(System.err);
             }
 
             int exitCode = process.waitFor();

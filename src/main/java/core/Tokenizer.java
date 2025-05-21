@@ -6,95 +6,149 @@ import java.util.List;
 public class Tokenizer {
     public TokenizerResult tokenize(String input) {
         List<String> tokens = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean inSingle = false, inDouble = false, escape = false;
+        StringBuilder sb = new StringBuilder();
+        boolean lastQuoted = false;
+        int i = 0;
 
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-
-            if (escape) {
-                if (inDouble) {
-                    switch (c) {
-                        case 'n':
-                            current.append('\n');
-                            break;
-                        case 't':
-                            current.append('\t');
-                            break;
-                        case '"':
-                            current.append('"');
-                            break;
-                        case '\\':
-                            current.append('\\');
-                            break;
-                        case '\'':
-                            current.append('\'');
-                            break;
-                        default:
-                            current.append('\\').append(c);
-                            break;
-                    }
-                } else if (inSingle) {
-                    current.append('\\').append(c);
-                } else {
-                    switch (c) {
-                        case 'n':
-                            current.append('\n');
-                            break;
-                        case 't':
-                            current.append('\t');
-                            break;
-                        case '"':
-                            current.append('"');
-                            break;
-                        case '\\':
-                            current.append('\\');
-                            break;
-                        case '\'':
-                            current.append('\'');
-                            break;
-                        default:
-                            current.append(c);
-                            break;
-                    }
-                }
-                escape = false;
-            } else if (c == '\\' && !inSingle) {
-                escape = true;
-            } else if (c == '\\' && inSingle) {
-                current.append('\\');
-            } else if (c == '"' && !inSingle) {
-                inDouble = !inDouble;
-            } else if (c == '\'' && !inDouble) {
-                inSingle = !inSingle;
-            } else if (Character.isWhitespace(c) && !inSingle && !inDouble) {
-                if (current.length() > 0) {
-                    tokens.add(current.toString());
-                    current.setLength(0);
-                }
-            } else {
-                current.append(c);
+        while (i < input.length()) {
+            while (i < input.length() && Character.isWhitespace(input.charAt(i))) {
+                i++;
+                lastQuoted = false;
             }
-        }
+            if (i >= input.length())
+                break;
 
-        if (current.length() > 0)
-            tokens.add(current.toString());
+            if (tokens.isEmpty()) {
+                if (input.charAt(i) == '\'' || input.charAt(i) == '\"') {
+                    char quote = input.charAt(i);
+                    i++;
+                    while (i < input.length() && input.charAt(i) != quote) {
+                        if (quote == '\"' && input.charAt(i) == '\\' && i + 1 < input.length()) {
+                            char next = input.charAt(i + 1);
+                            if (next == '\\' || next == '$' || next == '\"' || next == '\n') {
+                                sb.append(next);
+                                i += 2;
+                                continue;
+                            } else {
+                                sb.append('\\');
+                                i++;
+                                continue;
+                            }
+                        } else {
+                            sb.append(input.charAt(i));
+                            i++;
+                        }
+                    }
+                    i++;
+                    tokens.add(sb.toString());
+                    sb.setLength(0);
+                    lastQuoted = true;
+                    continue;
+                } else {
+                    while (i < input.length() && !Character.isWhitespace(input.charAt(i))) {
+                        if (input.charAt(i) == '\\') {
+                            i++;
+                            if (i < input.length()) {
+                                sb.append(input.charAt(i));
+                                i++;
+                            } else {
+                                sb.append('\\');
+                            }
+                        } else {
+                            sb.append(input.charAt(i));
+                            i++;
+                        }
+                    }
+                    tokens.add(sb.toString());
+                    sb.setLength(0);
+                    lastQuoted = false;
+                    continue;
+                }
+            }
+
+            if (input.charAt(i) == '\'') {
+                i++;
+                while (i < input.length() && input.charAt(i) != '\'') {
+                    sb.append(input.charAt(i));
+                    i++;
+                }
+                i++;
+                if (lastQuoted && !tokens.isEmpty()) {
+                    int lastIndex = tokens.size() - 1;
+                    tokens.set(lastIndex, tokens.get(lastIndex) + sb.toString());
+                } else {
+                    tokens.add(sb.toString());
+                }
+                sb.setLength(0);
+                lastQuoted = true;
+                continue;
+            } else if (input.charAt(i) == '\"') {
+                i++;
+                while (i < input.length() && input.charAt(i) != '\"') {
+                    if (input.charAt(i) == '\\' && i + 1 < input.length()) {
+                        char next = input.charAt(i + 1);
+                        if (next == '\\' || next == '$' || next == '\"' || next == '\n') {
+                            sb.append(next);
+                            i += 2;
+                            continue;
+                        } else {
+                            sb.append('\\');
+                            i++;
+                            continue;
+                        }
+                    } else {
+                        sb.append(input.charAt(i));
+                        i++;
+                    }
+                }
+                i++;
+                if (lastQuoted && !tokens.isEmpty()) {
+                    int lastIndex = tokens.size() - 1;
+                    tokens.set(lastIndex, tokens.get(lastIndex) + sb.toString());
+                } else {
+                    tokens.add(sb.toString());
+                }
+                sb.setLength(0);
+                lastQuoted = true;
+                continue;
+            }
+
+            while (i < input.length() && !Character.isWhitespace(input.charAt(i))) {
+                if (input.charAt(i) == '\\') {
+                    i++;
+                    if (i < input.length()) {
+                        sb.append(input.charAt(i));
+                        i++;
+                    } else {
+                        sb.append('\\');
+                    }
+                } else {
+                    sb.append(input.charAt(i));
+                    i++;
+                }
+            }
+            if (lastQuoted && !tokens.isEmpty()) {
+                int lastIndex = tokens.size() - 1;
+                tokens.set(lastIndex, tokens.get(lastIndex) + sb.toString());
+            } else {
+                tokens.add(sb.toString());
+            }
+            sb.setLength(0);
+            lastQuoted = true;
+        }
 
         TokenizerResult result = new TokenizerResult(new ArrayList<>(tokens));
 
-        int redirectIndex = -1;
-        for (int i = 0; i < result.tokens.size(); i++) {
-            String token = result.tokens.get(i);
+        for (int j = 0; j < result.tokens.size(); j++) {
+            String token = result.tokens.get(j);
             if (token.equals(">") || token.equals("1>")) {
-                redirectIndex = i;
-                result.isRedirect = true;
-                break;
+                if (j + 1 < result.tokens.size()) {
+                    result.isRedirect = true;
+                    result.redirectTarget = result.tokens.get(j + 1);
+                    result.tokens = result.tokens.subList(0, j);
+                    break;
+                }
             }
-        }
-
-        if (redirectIndex != -1 && redirectIndex + 1 < result.tokens.size()) {
-            result.redirectTarget = result.tokens.get(redirectIndex + 1);
-            result.tokens = result.tokens.subList(0, redirectIndex);
         }
 
         return result;
