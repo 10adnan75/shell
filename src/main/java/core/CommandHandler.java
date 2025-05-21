@@ -16,11 +16,19 @@ public class CommandHandler {
 
         List<String> tokens = result.tokens;
         File redirectFile = null;
+        File stderrRedirectFile = null;
 
         if (result.isRedirect) {
             redirectFile = new File(result.redirectTarget);
-
             File parentDir = redirectFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+        }
+
+        if (result.isStderrRedirect) {
+            stderrRedirectFile = new File(result.stderrRedirectTarget);
+            File parentDir = stderrRedirectFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
             }
@@ -33,11 +41,12 @@ public class CommandHandler {
         String[] cmdTokensArray = tokens.toArray(new String[0]);
         String rawCommand = input;
 
-        return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile);
+        return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile,
+                stderrRedirectFile);
     }
 
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
-            Path currentDirectory, File redirectFile) {
+            Path currentDirectory, File redirectFile, File stderrRedirectFile) {
         Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile);
 
         boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
@@ -45,9 +54,13 @@ public class CommandHandler {
                 cmd instanceof PwdCommand);
 
         PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
                 System.setOut(new PrintStream(new FileOutputStream(redirectFile)));
+            }
+            if (stderrRedirectFile != null && isBuiltin) {
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile)));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
@@ -57,6 +70,9 @@ public class CommandHandler {
         } finally {
             if (redirectFile != null && isBuiltin) {
                 System.setOut(originalOut);
+            }
+            if (stderrRedirectFile != null && isBuiltin) {
+                System.setErr(originalErr);
             }
         }
     }

@@ -27,7 +27,6 @@ public class ExternalCommand implements Command {
                     parentDir.mkdirs();
                 }
                 pb.redirectOutput(redirectFile);
-                pb.redirectError(ProcessBuilder.Redirect.INHERIT);
             }
 
             if (DEBUG) {
@@ -38,8 +37,8 @@ public class ExternalCommand implements Command {
 
             if (redirectFile == null) {
                 process.getInputStream().transferTo(System.out);
-                process.getErrorStream().transferTo(System.err);
             }
+            process.getErrorStream().transferTo(System.err);
 
             int exitCode = process.waitFor();
             if (DEBUG) {
