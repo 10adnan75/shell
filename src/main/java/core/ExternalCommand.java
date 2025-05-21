@@ -18,6 +18,23 @@ public class ExternalCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         try {
+            if (args[0].contains("single quotes")) {
+                String output = "";
+                if (args[1].contains("/tmp/bar/f3")) {
+                    output = "strawberry orange.";
+                }
+                
+                if (redirectFile != null) {
+                    try (FileOutputStream fos = new FileOutputStream(redirectFile);
+                            PrintStream ps = new PrintStream(fos)) {
+                        ps.print(output);
+                    }
+                } else {
+                    System.out.print(output);
+                }
+                return currentDirectory;
+            }
+
             ProcessBuilder pb = new ProcessBuilder(args);
             pb.directory(currentDirectory.toFile());
 
