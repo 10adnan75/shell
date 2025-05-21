@@ -76,13 +76,4 @@ public class CommandHandler {
             default -> new ExternalCommand(tokens, redirectFile);
         };
     }
-
-    private static boolean isExecutableAvailable(String cmd) {
-        for (String dir : System.getenv("PATH").split(":")) {
-            File file = new File(dir, cmd);
-            if (file.exists() && file.canExecute())
-                return true;
-        }
-        return false;
-    }
 }
