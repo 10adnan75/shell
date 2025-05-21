@@ -13,9 +13,9 @@ public class EchoCommand implements Command {
                     output.append(" ");
                 }
             }
-            System.out.print(output.toString());
+            System.out.println(output.toString());
         } else {
-            System.out.print("");
+            System.out.println();
         }
         return currentDirectory;
     }
