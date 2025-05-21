@@ -80,14 +80,10 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                PrintStream ps = new PrintStream(new FileOutputStream(redirectFile, isAppend), true);
-                ps.println();
-                System.setOut(ps);
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile), true);
-                ps.println();
-                System.setErr(ps);
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile), true));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
