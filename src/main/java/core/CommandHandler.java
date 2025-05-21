@@ -82,7 +82,12 @@ public class CommandHandler {
                             }
                         });
                     } else {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
+                            @Override
+                            public void print(String s) {
+                                super.println(s);
+                            }
+                        });
                     }
                 } else {
                     System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
