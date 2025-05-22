@@ -3,6 +3,8 @@ package core;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,31 +76,37 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                if (cmd instanceof EchoCommand) {
-                    if (!isAppend) {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
-                            @Override
-                            public void println() {
-                            }
-                            @Override
-                            public void println(String s) {
-                                super.print(s);
-                            }
-                        });
-                    } else {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
-                            @Override
-                            public void print(String s) {
-                                super.print(s + "\n");
-                            }
-                        });
+                if (isAppend && redirectFile.exists()) {
+                    StringBuilder existingContent = new StringBuilder();
+                    try (BufferedReader reader = new BufferedReader(new FileReader(redirectFile))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            existingContent.append(line).append("\n");
+                        }
                     }
+
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, true), true) {
+                        @Override
+                        public void print(String s) {
+                            super.print(s);
+                        }
+
+                        @Override
+                        public void println(String s) {
+                            super.print(s + "\n");
+                        }
+
+                        @Override
+                        public void println() {
+                            super.print("\n");
+                        }
+                    });
                 } else {
                     System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile), true));
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
