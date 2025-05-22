@@ -96,25 +96,29 @@ public class CommandHandler {
                         }
                     });
                 } else {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
+                    if (cmd instanceof EchoCommand) {
+                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
+                            @Override
+                            public void print(String s) {
+                                if (!s.endsWith("$ ")) {
+                                    super.print(s);
+                                }
                             }
-                        }
 
-                        @Override
-                        public void println(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
+                            @Override
+                            public void println(String s) {
+                                if (!s.endsWith("$ ")) {
+                                    super.print(s);
+                                }
                             }
-                        }
 
-                        @Override
-                        public void println() {
-                        }
-                    });
+                            @Override
+                            public void println() {
+                            }
+                        });
+                    } else {
+                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true));
+                    }
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
