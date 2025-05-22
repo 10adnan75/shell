@@ -74,11 +74,11 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
                     @Override
                     public void print(String s) {
                         if (s.endsWith("$ ")) {
-                            super.print(s.substring(0, s.length() - 2));
+                            super.print("\n" + s);
                         } else {
                             super.print(s);
                         }
@@ -87,7 +87,7 @@ public class CommandHandler {
                     @Override
                     public void println(String s) {
                         if (s.endsWith("$ ")) {
-                            super.print(s.substring(0, s.length() - 2) + "\n");
+                            super.print("\n" + s + "\n");
                         } else {
                             super.print(s + "\n");
                         }
@@ -100,7 +100,7 @@ public class CommandHandler {
                 });
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true));
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
