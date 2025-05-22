@@ -74,37 +74,33 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                if (isAppend) {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, true), true) {
-                        @Override
-                        public void print(String s) {
-                            if (s.endsWith("$ ")) {
-                                super.print(s.substring(0, s.length() - 2));
-                            } else {
-                                super.print(s);
-                            }
+                System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
+                    @Override
+                    public void print(String s) {
+                        if (s.endsWith("$ ")) {
+                            super.print(s.substring(0, s.length() - 2));
+                        } else {
+                            super.print(s);
                         }
+                    }
 
-                        @Override
-                        public void println(String s) {
-                            if (s.endsWith("$ ")) {
-                                super.print(s.substring(0, s.length() - 2) + "\n");
-                            } else {
-                                super.print(s + "\n");
-                            }
+                    @Override
+                    public void println(String s) {
+                        if (s.endsWith("$ ")) {
+                            super.print(s.substring(0, s.length() - 2) + "\n");
+                        } else {
+                            super.print(s + "\n");
                         }
+                    }
 
-                        @Override
-                        public void println() {
-                            super.print("\n");
-                        }
-                    });
-                } else {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true));
-                }
+                    @Override
+                    public void println() {
+                        super.print("\n");
+                    }
+                });
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true));
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true));
             }
 
             return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
