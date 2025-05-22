@@ -79,7 +79,7 @@ public class CommandHandler {
                         @Override
                         public void print(String s) {
                             if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
+                                super.print(s);
                             }
                         }
 
@@ -114,6 +114,7 @@ public class CommandHandler {
 
                             @Override
                             public void println() {
+                                super.print("\n");
                             }
                         });
                     } else {
