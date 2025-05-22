@@ -82,12 +82,14 @@ public class CommandHandler {
                                 super.print(s);
                             }
                         }
+
                         @Override
                         public void println(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s + "\n");
                             }
                         }
+
                         @Override
                         public void println() {
                             super.print("\n");
@@ -102,12 +104,14 @@ public class CommandHandler {
                                     super.print(s + "\n");
                                 }
                             }
+
                             @Override
                             public void println(String s) {
                                 if (!s.endsWith("$ ")) {
                                     super.print(s + "\n");
                                 }
                             }
+
                             @Override
                             public void println() {
                                 super.print("\n");
@@ -123,23 +127,21 @@ public class CommandHandler {
                     System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true) {
                         @Override
                         public void print(String s) {
-                            if (s.endsWith("$ ")) {
+                            if (!s.endsWith("$ ")) {
                                 super.print(s);
-                            } else {
-                                super.print(s + "\n$ ");
                             }
                         }
+
                         @Override
                         public void println(String s) {
-                            if (s.endsWith("$ ")) {
-                                super.print(s);
-                            } else {
-                                super.print(s + "\n$ ");
+                            if (!s.endsWith("$ ")) {
+                                super.print(s + "\n");
                             }
                         }
+
                         @Override
                         public void println() {
-                            super.print("\n$ ");
+                            super.print("\n");
                         }
                     });
                 } else {
@@ -148,11 +150,11 @@ public class CommandHandler {
             }
 
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
-            
+
             if (redirectFile != null && isAppend && isBuiltin) {
                 System.out.println();
             }
-            
+
             return result;
         } catch (Exception e) {
             System.err.println("Execution error: " + e.getMessage());
