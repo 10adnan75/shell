@@ -108,7 +108,7 @@ public class CommandHandler {
                             @Override
                             public void println(String s) {
                                 if (!s.endsWith("$ ")) {
-                                    super.print(s);
+                                    super.print(s + "\n");
                                 }
                             }
 
