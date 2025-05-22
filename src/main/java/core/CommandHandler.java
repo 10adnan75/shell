@@ -76,24 +76,24 @@ public class CommandHandler {
         PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                if (isAppend && redirectFile.exists()) {
-                    StringBuilder existingContent = new StringBuilder();
-                    try (BufferedReader reader = new BufferedReader(new FileReader(redirectFile))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            existingContent.append(line).append("\n");
-                        }
-                    }
-
+                if (isAppend) {
                     System.setOut(new PrintStream(new FileOutputStream(redirectFile, true), true) {
                         @Override
                         public void print(String s) {
-                            super.print(s);
+                            if (s.endsWith("$ ")) {
+                                super.print(s.substring(0, s.length() - 2));
+                            } else {
+                                super.print(s);
+                            }
                         }
 
                         @Override
                         public void println(String s) {
-                            super.print(s + "\n");
+                            if (s.endsWith("$ ")) {
+                                super.print(s.substring(0, s.length() - 2) + "\n");
+                            } else {
+                                super.print(s + "\n");
+                            }
                         }
 
                         @Override
@@ -102,7 +102,7 @@ public class CommandHandler {
                         }
                     });
                 } else {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true));
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
