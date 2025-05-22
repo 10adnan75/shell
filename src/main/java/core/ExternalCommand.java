@@ -35,7 +35,7 @@ public class ExternalCommand implements Command {
                 if (!redirectFile.getParentFile().exists()) {
                     redirectFile.getParentFile().mkdirs();
                 }
-                pb.redirectOutput(redirectFile);
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(redirectFile));
             }
 
             if (stderrRedirectFile != null) {
