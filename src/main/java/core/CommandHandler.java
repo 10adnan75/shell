@@ -126,7 +126,13 @@ public class CommandHandler {
                 System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true));
             }
 
-            return cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
+            Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
+
+            if (redirectFile != null && isAppend && isBuiltin) {
+                System.out.println();
+            }
+
+            return result;
         } catch (Exception e) {
             System.err.println("Execution error: " + e.getMessage());
             return this.currentDirectory;
