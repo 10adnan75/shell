@@ -5,18 +5,19 @@ import java.nio.file.Path;
 public class EchoCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
-        if (args.length > 1) {
-            StringBuilder output = new StringBuilder();
-            for (int i = 1; i < args.length; i++) {
-                output.append(args[i]);
-                if (i < args.length - 1) {
-                    output.append(" ");
-                }
-            }
-            System.out.print(output.toString());
-        } else {
-            System.out.print("");
+        if (args.length == 1) {
+            System.out.println();
+            return currentDirectory;
         }
+
+        StringBuilder output = new StringBuilder();
+        for (int i = 1; i < args.length; i++) {
+            if (i > 1) {
+                output.append(" ");
+            }
+            output.append(args[i]);
+        }
+        System.out.println(output.toString());
         return currentDirectory;
     }
 }
