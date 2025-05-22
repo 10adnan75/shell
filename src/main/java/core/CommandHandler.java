@@ -76,7 +76,15 @@ public class CommandHandler {
             if (redirectFile != null && isBuiltin) {
                 if (cmd instanceof EchoCommand) {
                     if (!isAppend) {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true));
+                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
+                            @Override
+                            public void println() {
+                            }
+                            @Override
+                            public void println(String s) {
+                                super.print(s);
+                            }
+                        });
                     } else {
                         System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
                             @Override
