@@ -80,6 +80,10 @@ public class CommandHandler {
                             @Override
                             public void println() {
                             }
+                            @Override
+                            public void print(String s) {
+                                super.print(s);
+                            }
                         });
                     } else {
                         System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
