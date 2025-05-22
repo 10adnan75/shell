@@ -85,7 +85,7 @@ public class CommandHandler {
                         System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
                             @Override
                             public void print(String s) {
-                                super.println(s);
+                                super.print(s + "\n");
                             }
                         });
                     }
