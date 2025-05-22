@@ -84,6 +84,10 @@ public class CommandHandler {
                             public void print(String s) {
                                 super.print(s);
                             }
+                            @Override
+                            public void println(String s) {
+                                super.print(s);
+                            }
                         });
                     } else {
                         System.setOut(new PrintStream(new FileOutputStream(redirectFile, isAppend), true) {
