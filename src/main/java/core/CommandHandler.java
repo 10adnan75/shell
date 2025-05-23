@@ -220,7 +220,7 @@ public class CommandHandler {
             default -> {
                 String path = getPath(cmdUnquoted);
                 if (path == null) {
-                    System.out.printf("%s: command not found%n", cmd);
+                    System.err.printf("%s: command not found%n", cmd);
                     yield new NoOpCommand();
                 }
                 tokens[0] = cmdUnquoted;

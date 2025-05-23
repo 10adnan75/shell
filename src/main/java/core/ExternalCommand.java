@@ -42,7 +42,7 @@ public class ExternalCommand implements Command {
                 if (!stderrRedirectFile.getParentFile().exists()) {
                     stderrRedirectFile.getParentFile().mkdirs();
                 }
-                pb.redirectError(stderrRedirectFile);
+                pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
             }
 
             if (DEBUG) {
@@ -67,7 +67,7 @@ public class ExternalCommand implements Command {
             if (e.getMessage().contains("No such file or directory") ||
                     e.getMessage().contains("error=2")) {
                 if (stderrRedirectFile != null) {
-                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
                         ps.println(this.args.get(0) + ": command not found");
                     } catch (IOException ex) {
                         System.err.println("Error writing to stderr file: " + ex.getMessage());
@@ -77,7 +77,7 @@ public class ExternalCommand implements Command {
                 }
             } else {
                 if (stderrRedirectFile != null) {
-                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
                         ps.println("Error executing command: " + e.getMessage());
                     } catch (IOException ex) {
                         System.err.println("Error writing to stderr file: " + ex.getMessage());
@@ -88,7 +88,7 @@ public class ExternalCommand implements Command {
             }
         } catch (InterruptedException e) {
             if (stderrRedirectFile != null) {
-                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
                     ps.println("Command execution interrupted: " + e.getMessage());
                 } catch (IOException ex) {
                     System.err.println("Error writing to stderr file: " + ex.getMessage());
@@ -99,7 +99,7 @@ public class ExternalCommand implements Command {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             if (stderrRedirectFile != null) {
-                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile))) {
+                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
                     ps.println("Error executing command: " + e.getMessage());
                 } catch (IOException ex) {
                     System.err.println("Error writing to stderr file: " + ex.getMessage());
