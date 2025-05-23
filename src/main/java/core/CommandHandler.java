@@ -80,6 +80,7 @@ public class CommandHandler {
                         public void print(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s);
+                                super.flush();
                             }
                         }
 
@@ -87,12 +88,14 @@ public class CommandHandler {
                         public void println(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s + "\n");
+                                super.flush();
                             }
                         }
 
                         @Override
                         public void println() {
                             super.print("\n");
+                            super.flush();
                         }
                     });
                 } else {
@@ -101,6 +104,7 @@ public class CommandHandler {
                         public void print(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s);
+                                super.flush();
                             }
                         }
 
@@ -108,12 +112,14 @@ public class CommandHandler {
                         public void println(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s + "\n");
+                                super.flush();
                             }
                         }
 
                         @Override
                         public void println() {
                             super.print("\n");
+                            super.flush();
                         }
                     });
                 }
@@ -148,7 +154,7 @@ public class CommandHandler {
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
 
             if (redirectFile != null && isAppend && isBuiltin) {
-                System.out.println();
+                System.out.flush();
             }
 
             return result;
