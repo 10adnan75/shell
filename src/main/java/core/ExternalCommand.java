@@ -129,6 +129,9 @@ public class ExternalCommand implements Command {
             if (!redirectFile.getParentFile().exists()) {
                 redirectFile.getParentFile().mkdirs();
             }
+            if (!redirectFile.exists()) {
+                redirectFile.createNewFile();
+            }
             if (isAppend) {
                 pb.redirectOutput(ProcessBuilder.Redirect.appendTo(redirectFile));
             } else {
@@ -139,6 +142,9 @@ public class ExternalCommand implements Command {
         if (stderrRedirectFile != null) {
             if (!stderrRedirectFile.getParentFile().exists()) {
                 stderrRedirectFile.getParentFile().mkdirs();
+            }
+            if (!stderrRedirectFile.exists()) {
+                stderrRedirectFile.createNewFile();
             }
             if (isAppend) {
                 pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
