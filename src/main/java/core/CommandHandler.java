@@ -117,39 +117,21 @@ public class CommandHandler {
 
             for (int i = 0; i < processes.length - 1; i++) {
                 final int index = i;
-                Thread t = new Thread(() -> {
-                    try (var out = processes[index].getInputStream();
-                            var in = processes[index + 1].getOutputStream()) {
-                        out.transferTo(in);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-                t.start();
-                t.join();
+                try (var out = processes[index].getInputStream();
+                        var in = processes[index + 1].getOutputStream()) {
+                    out.transferTo(in);
+                }
             }
 
-            Thread outputThread = new Thread(() -> {
-                try (var out = processes[processes.length - 1].getInputStream()) {
-                    out.transferTo(System.out);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            outputThread.start();
+            try (var out = processes[processes.length - 1].getInputStream()) {
+                out.transferTo(System.out);
+            }
 
             for (Process process : processes) {
-                Thread errorThread = new Thread(() -> {
-                    try (var err = process.getErrorStream()) {
-                        err.transferTo(System.err);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-                errorThread.start();
+                try (var err = process.getErrorStream()) {
+                    err.transferTo(System.err);
+                }
             }
-
-            outputThread.join(2000);
 
             for (Process process : processes) {
                 if (!process.waitFor(2, TimeUnit.SECONDS)) {
