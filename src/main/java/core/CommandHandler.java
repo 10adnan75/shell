@@ -125,12 +125,8 @@ public class CommandHandler {
                 }
             }
 
-            try (var out = processes[processes.length - 1].getInputStream();
-                    var reader = new BufferedReader(new InputStreamReader(out))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
+            try (var out = processes[processes.length - 1].getInputStream()) {
+                out.transferTo(System.out);
             }
 
             for (Process process : processes) {
@@ -139,12 +135,8 @@ public class CommandHandler {
                 }
             }
 
-            processes[processes.length - 1].waitFor(2, TimeUnit.SECONDS);
-
-            for (int i = 0; i < processes.length - 1; i++) {
-                if (!processes[i].waitFor(2, TimeUnit.SECONDS)) {
-                    processes[i].destroy();
-                }
+            for (Process process : processes) {
+                process.waitFor();
             }
 
             return currentDirectory;
