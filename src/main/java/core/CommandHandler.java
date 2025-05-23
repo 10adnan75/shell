@@ -149,6 +149,8 @@ public class CommandHandler {
                 errorThread.start();
             }
 
+            outputThread.join(2000);
+
             for (Process process : processes) {
                 if (!process.waitFor(2, TimeUnit.SECONDS)) {
                     process.destroy();
