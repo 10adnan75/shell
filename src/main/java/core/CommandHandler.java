@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
 import builtins.*;
 
@@ -118,54 +116,20 @@ public class CommandHandler {
 
             for (int i = 0; i < processes.length - 1; i++) {
                 final int index = i;
-                PipedInputStream pipedIn = new PipedInputStream();
-                PipedOutputStream pipedOut = new PipedOutputStream(pipedIn);
-
-                Thread t1 = new Thread(() -> {
-                    try {
-                        processes[index].getInputStream().transferTo(pipedOut);
-                        pipedOut.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                Thread t2 = new Thread(() -> {
-                    try {
-                        pipedIn.transferTo(processes[index + 1].getOutputStream());
-                        pipedIn.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                t1.start();
-                t2.start();
-                t1.join();
-                t2.join();
+                try (var out = processes[index].getInputStream();
+                        var in = processes[index + 1].getOutputStream()) {
+                    out.transferTo(in);
+                }
             }
 
-            if (processes.length > 0) {
-                Thread t1 = new Thread(() -> {
-                    try {
-                        processes[processes.length - 1].getInputStream().transferTo(System.out);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+            try (var out = processes[processes.length - 1].getInputStream()) {
+                out.transferTo(System.out);
+            }
 
-                Thread t2 = new Thread(() -> {
-                    try {
-                        processes[processes.length - 1].getErrorStream().transferTo(System.err);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                t1.start();
-                t2.start();
-                t1.join();
-                t2.join();
+            for (Process process : processes) {
+                try (var err = process.getErrorStream()) {
+                    err.transferTo(System.err);
+                }
             }
 
             for (Process process : processes) {
