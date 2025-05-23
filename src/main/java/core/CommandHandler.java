@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import builtins.*;
 
@@ -133,7 +134,9 @@ public class CommandHandler {
             }
 
             for (Process process : processes) {
-                process.waitFor();
+                if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                    process.destroy();
+                }
             }
 
             return currentDirectory;
