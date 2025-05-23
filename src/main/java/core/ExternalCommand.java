@@ -74,56 +74,23 @@ public class ExternalCommand implements Command {
                 System.err.println("Process exited with code: " + exitCode);
             }
 
+            return currentDirectory;
         } catch (IOException e) {
             if (e.getMessage().contains("No such file or directory") ||
                     e.getMessage().contains("error=2")) {
-                if (stderrRedirectFile != null) {
-                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
-                        ps.println(this.args.get(0) + ": command not found");
-                    } catch (IOException ex) {
-                        System.err.println("Error writing to stderr file: " + ex.getMessage());
-                    }
-                } else {
-                    System.err.println(this.args.get(0) + ": command not found");
-                }
-            } else {
-                if (stderrRedirectFile != null) {
-                    try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
-                        ps.println("Error executing command: " + e.getMessage());
-                    } catch (IOException ex) {
-                        System.err.println("Error writing to stderr file: " + ex.getMessage());
-                    }
-                } else {
-                    System.err.println("Error executing command: " + e.getMessage());
-                }
-            }
-        } catch (InterruptedException e) {
-            if (stderrRedirectFile != null) {
-                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
-                    ps.println("Command execution interrupted: " + e.getMessage());
-                } catch (IOException ex) {
-                    System.err.println("Error writing to stderr file: " + ex.getMessage());
-                }
-            } else {
-                System.err.println("Command execution interrupted: " + e.getMessage());
-            }
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            if (stderrRedirectFile != null) {
-                try (PrintStream ps = new PrintStream(new FileOutputStream(stderrRedirectFile, true))) {
-                    ps.println("Error executing command: " + e.getMessage());
-                } catch (IOException ex) {
-                    System.err.println("Error writing to stderr file: " + ex.getMessage());
-                }
+                System.err.println(this.args.get(0) + ": command not found");
             } else {
                 System.err.println("Error executing command: " + e.getMessage());
             }
+            return currentDirectory;
+        } catch (InterruptedException e) {
+            System.err.println("Command execution interrupted: " + e.getMessage());
+            Thread.currentThread().interrupt();
+            return currentDirectory;
+        } catch (Exception e) {
+            System.err.println("Error executing command: " + e.getMessage());
+            return currentDirectory;
         }
-
-        System.out.flush();
-        System.err.flush();
-
-        return currentDirectory;
     }
 
     public void execute(File redirectFile, File stderrRedirectFile, boolean isAppend) throws IOException {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.io.IOException;
 
 import builtins.*;
 
@@ -116,23 +117,28 @@ public class CommandHandler {
             }
 
             if (stderrRedirectFile != null) {
-                FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isAppend);
-                PrintStream ps = new PrintStream(fos, true) {
-                    @Override
-                    public void print(String s) {
-                        if (!s.equals("$ ")) {
-                            super.print(s);
+                try {
+                    FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isAppend);
+                    PrintStream ps = new PrintStream(fos, true) {
+                        @Override
+                        public void print(String s) {
+                            if (!s.equals("$ ")) {
+                                super.print(s);
+                            }
                         }
-                    }
 
-                    @Override
-                    public void println(String s) {
-                        if (!s.equals("$ ")) {
-                            super.println(s);
+                        @Override
+                        public void println(String s) {
+                            if (!s.equals("$ ")) {
+                                super.println(s);
+                            }
                         }
-                    }
-                };
-                System.setErr(ps);
+                    };
+                    System.setErr(ps);
+                } catch (IOException e) {
+                    System.err.println("Error setting up stderr redirection: " + e.getMessage());
+                    return currentDirectory;
+                }
             }
 
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
