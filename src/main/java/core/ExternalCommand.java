@@ -136,4 +136,8 @@ public class ExternalCommand implements Command {
             throw new IOException("Command execution interrupted", e);
         }
     }
+
+    public List<String> getArgs() {
+        return args;
+    }
 }

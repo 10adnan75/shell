@@ -36,6 +36,10 @@ public class CommandHandler {
         Tokenizer tokenizer = new Tokenizer();
         TokenizerResult result = tokenizer.tokenize(input);
 
+        if (result.isPipeline) {
+            return handlePipeline(result.pipelineParts, currentDirectory);
+        }
+
         List<String> tokens = result.tokens;
         File redirectFile = null;
         File stderrRedirectFile = null;
@@ -85,6 +89,55 @@ public class CommandHandler {
 
         return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile,
                 stderrRedirectFile, result.isAppend, result.isStderrAppend);
+    }
+
+    private Path handlePipeline(List<TokenizerResult> pipelineParts, Path currentDirectory) {
+        try {
+            ProcessBuilder[] processBuilders = new ProcessBuilder[pipelineParts.size()];
+            Process[] processes = new Process[pipelineParts.size()];
+
+            for (int i = 0; i < pipelineParts.size(); i++) {
+                TokenizerResult part = pipelineParts.get(i);
+                String[] cmdTokensArray = part.tokens.toArray(new String[0]);
+                Command cmd = getCommand(cmdTokensArray, "", null, null);
+
+                if (cmd instanceof ExternalCommand) {
+                    processBuilders[i] = new ProcessBuilder(((ExternalCommand) cmd).getArgs());
+                    processBuilders[i].directory(currentDirectory.toFile());
+                } else {
+                    System.err.println("Pipeline only supports external commands");
+                    return currentDirectory;
+                }
+            }
+
+            for (int i = 0; i < processBuilders.length; i++) {
+                processes[i] = processBuilders[i].start();
+            }
+
+            for (int i = 0; i < processes.length - 1; i++) {
+                processes[i].getOutputStream().close();
+                processes[i + 1].getInputStream().close();
+                processes[i].getInputStream().transferTo(processes[i + 1].getOutputStream());
+            }
+
+            if (processes.length > 0) {
+                processes[0].getOutputStream().close();
+                processes[processes.length - 1].getInputStream().transferTo(System.out);
+                processes[processes.length - 1].getErrorStream().transferTo(System.err);
+            }
+
+            for (Process process : processes) {
+                process.waitFor();
+            }
+
+            return currentDirectory;
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error executing pipeline: " + e.getMessage());
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return currentDirectory;
+        }
     }
 
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,

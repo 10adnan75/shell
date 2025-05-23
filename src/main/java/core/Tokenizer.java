@@ -10,6 +10,29 @@ public class Tokenizer {
         boolean lastQuoted = false;
         int i = 0;
 
+        String[] pipelineParts = input.split("\\|");
+        if (pipelineParts.length > 1) {
+            TokenizerResult result = new TokenizerResult(new ArrayList<>());
+            result.isPipeline = true;
+            result.pipelineParts = new ArrayList<>();
+
+            for (String part : pipelineParts) {
+                TokenizerResult partResult = tokenizePart(part.trim());
+                result.pipelineParts.add(partResult);
+            }
+
+            return result;
+        }
+
+        return tokenizePart(input);
+    }
+
+    private TokenizerResult tokenizePart(String input) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean lastQuoted = false;
+        int i = 0;
+
         while (i < input.length()) {
             while (i < input.length() && Character.isWhitespace(input.charAt(i))) {
                 i++;
