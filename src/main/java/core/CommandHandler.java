@@ -58,13 +58,19 @@ public class CommandHandler {
             stderrRedirectFile = new File(result.stderrRedirectTarget);
             File parentDir = stderrRedirectFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
+                try {
+                    parentDir.mkdirs();
+                } catch (Exception e) {
+                    System.err.println("Error creating stderr redirect directory: " + e.getMessage());
+                    return currentDirectory;
+                }
             }
             if (!stderrRedirectFile.exists()) {
                 try {
                     stderrRedirectFile.createNewFile();
                 } catch (Exception e) {
                     System.err.println("Error creating stderr redirect file: " + e.getMessage());
+                    return currentDirectory;
                 }
             }
         }
