@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import builtins.*;
 
@@ -123,8 +125,12 @@ public class CommandHandler {
                 }
             }
 
-            try (var out = processes[processes.length - 1].getInputStream()) {
-                out.transferTo(System.out);
+            try (var out = processes[processes.length - 1].getInputStream();
+                    var reader = new BufferedReader(new InputStreamReader(out))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
 
             for (Process process : processes) {
