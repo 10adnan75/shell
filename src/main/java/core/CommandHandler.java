@@ -110,24 +110,22 @@ public class CommandHandler {
                 }
             }
 
-            for (int i = 0; i < processBuilders.length - 1; i++) {
-                processBuilders[i].redirectOutput(ProcessBuilder.Redirect.PIPE);
-                processBuilders[i + 1].redirectInput(ProcessBuilder.Redirect.PIPE);
-            }
-
-            if (processBuilders.length > 0) {
-                processBuilders[0].redirectInput(ProcessBuilder.Redirect.INHERIT);
-                processBuilders[processBuilders.length - 1].redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                processBuilders[processBuilders.length - 1].redirectError(ProcessBuilder.Redirect.INHERIT);
-            }
-
             for (int i = 0; i < processBuilders.length; i++) {
                 processes[i] = processBuilders[i].start();
             }
 
             for (int i = 0; i < processes.length - 1; i++) {
-                try (var out = processes[i].getOutputStream()) {
+                try (var out = processes[i].getOutputStream();
+                        var in = processes[i + 1].getInputStream()) {
                     processes[i].getInputStream().transferTo(out);
+                }
+            }
+
+            if (processes.length > 0) {
+                try (var in = processes[processes.length - 1].getInputStream();
+                        var err = processes[processes.length - 1].getErrorStream()) {
+                    in.transferTo(System.out);
+                    err.transferTo(System.err);
                 }
             }
 
