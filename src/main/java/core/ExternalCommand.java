@@ -134,7 +134,11 @@ public class ExternalCommand implements Command {
             if (!stderrRedirectFile.getParentFile().exists()) {
                 stderrRedirectFile.getParentFile().mkdirs();
             }
-            pb.redirectError(stderrRedirectFile);
+            if (isAppend) {
+                pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
+            } else {
+                pb.redirectError(stderrRedirectFile);
+            }
         }
 
         try {

@@ -125,55 +125,7 @@ public class CommandHandler {
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                if (isAppend) {
-                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, true), true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println() {
-                            super.print("\n");
-                            super.flush();
-                        }
-                    });
-                } else {
-                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println() {
-                            super.print("\n");
-                            super.flush();
-                        }
-                    });
-                }
+                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true));
             }
 
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
