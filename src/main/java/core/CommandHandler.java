@@ -125,12 +125,13 @@ public class CommandHandler {
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
-                if (cmd instanceof EchoCommand) {
-                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true) {
+                if (isAppend) {
+                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, true), true) {
                         @Override
                         public void print(String s) {
                             if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
+                                super.print(s);
+                                super.flush();
                             }
                         }
 
@@ -138,16 +139,40 @@ public class CommandHandler {
                         public void println(String s) {
                             if (!s.endsWith("$ ")) {
                                 super.print(s + "\n");
+                                super.flush();
                             }
                         }
 
                         @Override
                         public void println() {
                             super.print("\n");
+                            super.flush();
                         }
                     });
                 } else {
-                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true));
+                    System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, false), true) {
+                        @Override
+                        public void print(String s) {
+                            if (!s.endsWith("$ ")) {
+                                super.print(s);
+                                super.flush();
+                            }
+                        }
+
+                        @Override
+                        public void println(String s) {
+                            if (!s.endsWith("$ ")) {
+                                super.print(s + "\n");
+                                super.flush();
+                            }
+                        }
+
+                        @Override
+                        public void println() {
+                            super.print("\n");
+                            super.flush();
+                        }
+                    });
                 }
             }
 
@@ -155,6 +180,9 @@ public class CommandHandler {
 
             if (redirectFile != null && isAppend && isBuiltin) {
                 System.out.flush();
+            }
+            if (stderrRedirectFile != null && isAppend && isBuiltin) {
+                System.err.flush();
             }
 
             return result;
