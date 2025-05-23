@@ -35,12 +35,18 @@ public class ExternalCommand implements Command {
                 if (!redirectFile.getParentFile().exists()) {
                     redirectFile.getParentFile().mkdirs();
                 }
+                if (!redirectFile.exists()) {
+                    redirectFile.createNewFile();
+                }
                 pb.redirectOutput(ProcessBuilder.Redirect.appendTo(redirectFile));
             }
 
             if (stderrRedirectFile != null) {
                 if (!stderrRedirectFile.getParentFile().exists()) {
                     stderrRedirectFile.getParentFile().mkdirs();
+                }
+                if (!stderrRedirectFile.exists()) {
+                    stderrRedirectFile.createNewFile();
                 }
                 pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
             }
