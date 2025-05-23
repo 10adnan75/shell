@@ -16,6 +16,8 @@ import builtins.*;
 public class CommandHandler {
     private final Map<String, Command> builtinCommands;
     private Path currentDirectory;
+    private final PrintStream originalOut;
+    private final PrintStream originalErr;
 
     public CommandHandler() {
         this.builtinCommands = new HashMap<>();
@@ -25,6 +27,8 @@ public class CommandHandler {
         this.builtinCommands.put("cd", new CdCommand());
         this.builtinCommands.put("type", new TypeCommand());
         this.currentDirectory = Paths.get(System.getProperty("user.dir"));
+        this.originalOut = System.out;
+        this.originalErr = System.err;
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
@@ -41,6 +45,13 @@ public class CommandHandler {
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
             }
+            if (!redirectFile.exists()) {
+                try {
+                    redirectFile.createNewFile();
+                } catch (Exception e) {
+                    System.err.println("Error creating redirect file: " + e.getMessage());
+                }
+            }
         }
 
         if (result.isStderrRedirect) {
@@ -48,6 +59,13 @@ public class CommandHandler {
             File parentDir = stderrRedirectFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
+            }
+            if (!stderrRedirectFile.exists()) {
+                try {
+                    stderrRedirectFile.createNewFile();
+                } catch (Exception e) {
+                    System.err.println("Error creating stderr redirect file: " + e.getMessage());
+                }
             }
         }
 
@@ -70,65 +88,10 @@ public class CommandHandler {
                 cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
                 cmd instanceof PwdCommand);
 
-        PrintStream originalOut = System.out;
-        PrintStream originalErr = System.err;
         try {
             if (redirectFile != null && isBuiltin) {
-                if (isAppend) {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, true), true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println() {
-                            super.print("\n");
-                            super.flush();
-                        }
-                    });
-                } else {
-                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s);
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println(String s) {
-                            if (!s.endsWith("$ ")) {
-                                super.print(s + "\n");
-                                super.flush();
-                            }
-                        }
-
-                        @Override
-                        public void println() {
-                            super.print("\n");
-                            super.flush();
-                        }
-                    });
-                }
-            }
-            if (stderrRedirectFile != null) {
-                if (!stderrRedirectFile.getParentFile().exists()) {
-                    stderrRedirectFile.getParentFile().mkdirs();
-                }
-                PrintStream stderrStream = new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend)) {
+                FileOutputStream fos = new FileOutputStream(redirectFile, isAppend);
+                PrintStream ps = new PrintStream(fos, true) {
                     @Override
                     public void print(String s) {
                         if (!s.equals("$ ")) {
@@ -143,15 +106,35 @@ public class CommandHandler {
                         }
                     }
                 };
-                System.setErr(stderrStream);
+                System.setOut(ps);
+            }
+
+            if (stderrRedirectFile != null) {
+                FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isAppend);
+                PrintStream ps = new PrintStream(fos, true) {
+                    @Override
+                    public void print(String s) {
+                        if (!s.equals("$ ")) {
+                            super.print(s);
+                        }
+                    }
+
+                    @Override
+                    public void println(String s) {
+                        if (!s.equals("$ ")) {
+                            super.println(s);
+                        }
+                    }
+                };
+                System.setErr(ps);
             }
 
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
 
-            if (redirectFile != null && isAppend && isBuiltin) {
+            if (redirectFile != null && isBuiltin) {
                 System.out.flush();
             }
-            if (stderrRedirectFile != null && isAppend && isBuiltin) {
+            if (stderrRedirectFile != null) {
                 System.err.flush();
             }
 
@@ -163,7 +146,7 @@ public class CommandHandler {
             if (redirectFile != null && isBuiltin) {
                 System.setOut(originalOut);
             }
-            if (stderrRedirectFile != null && isBuiltin) {
+            if (stderrRedirectFile != null) {
                 System.setErr(originalErr);
             }
         }
