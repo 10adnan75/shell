@@ -84,11 +84,12 @@ public class CommandHandler {
         String rawCommand = input;
 
         return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile,
-                stderrRedirectFile, result.isAppend);
+                stderrRedirectFile, result.isAppend, result.isStderrAppend);
     }
 
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
-            Path currentDirectory, File redirectFile, File stderrRedirectFile, boolean isAppend) {
+            Path currentDirectory, File redirectFile, File stderrRedirectFile, boolean isAppend,
+            boolean isStderrAppend) {
         Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
 
         boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
@@ -118,7 +119,7 @@ public class CommandHandler {
 
             if (stderrRedirectFile != null) {
                 try {
-                    FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isAppend);
+                    FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isStderrAppend);
                     PrintStream ps = new PrintStream(fos, true) {
                         @Override
                         public void print(String s) {

@@ -163,6 +163,14 @@ public class Tokenizer {
                     result.tokens = result.tokens.subList(0, j);
                     break;
                 }
+            } else if (token.equals("2>>")) {
+                if (j + 1 < result.tokens.size()) {
+                    result.isStderrRedirect = true;
+                    result.isStderrAppend = true;
+                    result.stderrRedirectTarget = result.tokens.get(j + 1);
+                    result.tokens = result.tokens.subList(0, j);
+                    break;
+                }
             }
         }
 
