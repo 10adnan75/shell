@@ -96,30 +96,26 @@ public class CommandHandler {
                         }
                     });
                 } else {
-                    if (cmd instanceof EchoCommand) {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
-                            @Override
-                            public void print(String s) {
-                                if (!s.endsWith("$ ")) {
-                                    super.print(s + "\n");
-                                }
+                    System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true) {
+                        @Override
+                        public void print(String s) {
+                            if (!s.endsWith("$ ")) {
+                                super.print(s);
                             }
+                        }
 
-                            @Override
-                            public void println(String s) {
-                                if (!s.endsWith("$ ")) {
-                                    super.print(s + "\n");
-                                }
+                        @Override
+                        public void println(String s) {
+                            if (!s.endsWith("$ ")) {
+                                super.print(s + "\n");
                             }
+                        }
 
-                            @Override
-                            public void println() {
-                                super.print("\n");
-                            }
-                        });
-                    } else {
-                        System.setOut(new PrintStream(new FileOutputStream(redirectFile, false), true));
-                    }
+                        @Override
+                        public void println() {
+                            super.print("\n");
+                        }
+                    });
                 }
             }
             if (stderrRedirectFile != null && isBuiltin) {
