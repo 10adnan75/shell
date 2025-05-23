@@ -42,13 +42,18 @@ public class ExternalCommand implements Command {
             }
 
             if (stderrRedirectFile != null) {
-                if (!stderrRedirectFile.getParentFile().exists()) {
-                    stderrRedirectFile.getParentFile().mkdirs();
+                try {
+                    if (!stderrRedirectFile.getParentFile().exists()) {
+                        stderrRedirectFile.getParentFile().mkdirs();
+                    }
+                    if (!stderrRedirectFile.exists()) {
+                        stderrRedirectFile.createNewFile();
+                    }
+                    pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
+                } catch (IOException e) {
+                    System.err.println("Error setting up stderr redirection: " + e.getMessage());
+                    return currentDirectory;
                 }
-                if (!stderrRedirectFile.exists()) {
-                    stderrRedirectFile.createNewFile();
-                }
-                pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
             }
 
             if (DEBUG) {
@@ -140,16 +145,20 @@ public class ExternalCommand implements Command {
         }
 
         if (stderrRedirectFile != null) {
-            if (!stderrRedirectFile.getParentFile().exists()) {
-                stderrRedirectFile.getParentFile().mkdirs();
-            }
-            if (!stderrRedirectFile.exists()) {
-                stderrRedirectFile.createNewFile();
-            }
-            if (isAppend) {
-                pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
-            } else {
-                pb.redirectError(stderrRedirectFile);
+            try {
+                if (!stderrRedirectFile.getParentFile().exists()) {
+                    stderrRedirectFile.getParentFile().mkdirs();
+                }
+                if (!stderrRedirectFile.exists()) {
+                    stderrRedirectFile.createNewFile();
+                }
+                if (isAppend) {
+                    pb.redirectError(ProcessBuilder.Redirect.appendTo(stderrRedirectFile));
+                } else {
+                    pb.redirectError(stderrRedirectFile);
+                }
+            } catch (IOException e) {
+                throw new IOException("Error setting up stderr redirection: " + e.getMessage());
             }
         }
 
