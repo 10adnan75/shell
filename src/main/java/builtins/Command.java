@@ -1,4 +1,5 @@
 package builtins;
+
 import java.nio.file.Path;
 
 public interface Command {
