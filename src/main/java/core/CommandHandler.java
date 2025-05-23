@@ -124,30 +124,26 @@ public class CommandHandler {
                     });
                 }
             }
-            if (stderrRedirectFile != null && isBuiltin) {
-                System.setErr(new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend), true) {
+            if (stderrRedirectFile != null) {
+                if (!stderrRedirectFile.getParentFile().exists()) {
+                    stderrRedirectFile.getParentFile().mkdirs();
+                }
+                PrintStream stderrStream = new PrintStream(new FileOutputStream(stderrRedirectFile, isAppend)) {
                     @Override
                     public void print(String s) {
-                        if (!s.endsWith("$ ")) {
+                        if (!s.equals("$ ")) {
                             super.print(s);
-                            super.flush();
                         }
                     }
 
                     @Override
                     public void println(String s) {
-                        if (!s.endsWith("$ ")) {
-                            super.print(s + "\n");
-                            super.flush();
+                        if (!s.equals("$ ")) {
+                            super.println(s);
                         }
                     }
-
-                    @Override
-                    public void println() {
-                        super.print("\n");
-                        super.flush();
-                    }
-                });
+                };
+                System.setErr(stderrStream);
             }
 
             Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
