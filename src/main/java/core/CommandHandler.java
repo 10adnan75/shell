@@ -133,9 +133,11 @@ public class CommandHandler {
                 }
             }
 
-            for (Process process : processes) {
-                if (!process.waitFor(2, TimeUnit.SECONDS)) {
-                    process.destroy();
+            processes[processes.length - 1].waitFor(2, TimeUnit.SECONDS);
+
+            for (int i = 0; i < processes.length - 1; i++) {
+                if (!processes[i].waitFor(2, TimeUnit.SECONDS)) {
+                    processes[i].destroy();
                 }
             }
 
