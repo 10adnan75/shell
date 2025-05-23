@@ -115,15 +115,20 @@ public class CommandHandler {
             }
 
             for (int i = 0; i < processes.length - 1; i++) {
-                processes[i].getOutputStream().close();
-                processes[i + 1].getInputStream().close();
-                processes[i].getInputStream().transferTo(processes[i + 1].getOutputStream());
+                try (var out = processes[i].getOutputStream();
+                        var in = processes[i + 1].getInputStream()) {
+                    processes[i].getInputStream().transferTo(out);
+                }
             }
 
             if (processes.length > 0) {
-                processes[0].getOutputStream().close();
-                processes[processes.length - 1].getInputStream().transferTo(System.out);
-                processes[processes.length - 1].getErrorStream().transferTo(System.err);
+                try (var out = processes[0].getOutputStream()) {
+                }
+                try (var in = processes[processes.length - 1].getInputStream();
+                        var err = processes[processes.length - 1].getErrorStream()) {
+                    in.transferTo(System.out);
+                    err.transferTo(System.err);
+                }
             }
 
             for (Process process : processes) {

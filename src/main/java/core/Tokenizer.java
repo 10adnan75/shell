@@ -5,10 +5,6 @@ import java.util.List;
 
 public class Tokenizer {
     public TokenizerResult tokenize(String input) {
-        List<String> tokens = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        boolean lastQuoted = false;
-        int i = 0;
 
         String[] pipelineParts = input.split("\\|");
         if (pipelineParts.length > 1) {
