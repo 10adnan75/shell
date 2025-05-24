@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 import builtins.*;
 
@@ -135,8 +132,10 @@ public class CommandHandler {
                 }
             }
 
-            for (Process process : processes) {
-                process.waitFor();
+            processes[processes.length - 1].waitFor();
+
+            for (int i = 0; i < processes.length - 1; i++) {
+                processes[i].waitFor();
             }
 
             return currentDirectory;
