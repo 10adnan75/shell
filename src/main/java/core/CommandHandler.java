@@ -132,10 +132,8 @@ public class CommandHandler {
                 }
             }
 
-            processes[processes.length - 1].waitFor();
-
-            for (int i = 0; i < processes.length - 1; i++) {
-                processes[i].waitFor();
+            for (Process process : processes) {
+                process.waitFor();
             }
 
             return currentDirectory;
