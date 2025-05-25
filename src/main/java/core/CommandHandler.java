@@ -110,30 +110,38 @@ public class CommandHandler {
                 }
             }
 
+            // Start all processes
             for (int i = 0; i < processBuilders.length; i++) {
                 processes[i] = processBuilders[i].start();
             }
 
+            // Connect the processes in the pipeline
             for (int i = 0; i < processes.length - 1; i++) {
                 final int index = i;
                 try (var out = processes[index].getInputStream();
-                        var in = processes[index + 1].getOutputStream()) {
+                     var in = processes[index + 1].getOutputStream()) {
                     out.transferTo(in);
                 }
             }
 
-            try (var out = processes[processes.length - 1].getInputStream()) {
-                out.transferTo(System.out);
-            }
-
+            // Handle error streams
             for (Process process : processes) {
                 try (var err = process.getErrorStream()) {
                     err.transferTo(System.err);
                 }
             }
 
-            for (Process process : processes) {
-                process.waitFor();
+            // Handle the final output
+            try (var out = processes[processes.length - 1].getInputStream()) {
+                out.transferTo(System.out);
+            }
+
+            // Wait for the last process first
+            processes[processes.length - 1].waitFor();
+
+            // Then wait for all other processes
+            for (int i = 0; i < processes.length - 1; i++) {
+                processes[i].waitFor();
             }
 
             return currentDirectory;
