@@ -146,8 +146,11 @@ public class CommandHandler {
             // Wait for the last process first
             processes[processes.length - 1].waitFor();
 
-            // Then wait for all other processes
+            // Then wait for all other processes and destroy them if they're still running
             for (int i = 0; i < processes.length - 1; i++) {
+                if (processes[i].isAlive()) {
+                    processes[i].destroy();
+                }
                 processes[i].waitFor();
             }
 
