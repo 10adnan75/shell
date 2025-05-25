@@ -96,6 +96,7 @@ public class CommandHandler {
             ProcessBuilder[] processBuilders = new ProcessBuilder[pipelineParts.size()];
             Process[] processes = new Process[pipelineParts.size()];
 
+            // Create all process builders first
             for (int i = 0; i < pipelineParts.size(); i++) {
                 TokenizerResult part = pipelineParts.get(i);
                 String[] cmdTokensArray = part.tokens.toArray(new String[0]);
@@ -120,7 +121,13 @@ public class CommandHandler {
                 final int index = i;
                 try (var out = processes[index].getInputStream();
                      var in = processes[index + 1].getOutputStream()) {
-                    out.transferTo(in);
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = out.read(buffer)) != -1) {
+                        in.write(buffer, 0, bytesRead);
+                        in.flush();
+                    }
+                    in.close();
                 }
             }
 
