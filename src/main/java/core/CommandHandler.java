@@ -114,12 +114,6 @@ public class CommandHandler {
                 processes[i] = processBuilders[i].start();
             }
 
-            for (Process process : processes) {
-                try (var err = process.getErrorStream()) {
-                    err.transferTo(System.err);
-                }
-            }
-
             for (int i = 0; i < processes.length - 1; i++) {
                 final int index = i;
                 try (var out = processes[index].getInputStream();
@@ -132,10 +126,14 @@ public class CommandHandler {
                 out.transferTo(System.out);
             }
 
-            processes[processes.length - 1].waitFor();
+            for (Process process : processes) {
+                try (var err = process.getErrorStream()) {
+                    err.transferTo(System.err);
+                }
+            }
 
-            for (int i = 0; i < processes.length - 1; i++) {
-                processes[i].waitFor();
+            for (Process process : processes) {
+                process.waitFor();
             }
 
             return currentDirectory;
