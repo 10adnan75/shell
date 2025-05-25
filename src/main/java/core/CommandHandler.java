@@ -124,16 +124,16 @@ public class CommandHandler {
                 }
             }
 
+            // Handle the final output
+            try (var out = processes[processes.length - 1].getInputStream()) {
+                out.transferTo(System.out);
+            }
+
             // Handle error streams
             for (Process process : processes) {
                 try (var err = process.getErrorStream()) {
                     err.transferTo(System.err);
                 }
-            }
-
-            // Handle the final output
-            try (var out = processes[processes.length - 1].getInputStream()) {
-                out.transferTo(System.out);
             }
 
             // Wait for the last process first
