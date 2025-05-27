@@ -8,12 +8,11 @@ public class BuiltinCompleter {
         System.out.print(prompt);
         System.out.flush();
         StringBuilder inputBuffer = new StringBuilder();
-        boolean justCompleted = false;
         Trie trie = new Trie();
         for (String builtin : builtins) {
             trie.insert(builtin);
         }
-        try (var scope = Termios.enableRawMode()) {
+        try (Termios _ = Termios.enableRawMode()) {
             while (true) {
                 int ch = System.in.read();
                 if (ch == -1) {
@@ -30,11 +29,10 @@ public class BuiltinCompleter {
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
-                            String completion = match.substring(current.length());
-                            inputBuffer.append(completion);
-                            System.out.print(completion);
-                            inputBuffer.append(' ');
-                            System.out.print(' ');
+                            inputBuffer.setLength(0);
+                            inputBuffer.append(match).append(' ');
+                            clearLine(prompt.length() + Math.max(current.length(), match.length()));
+                            System.out.print(prompt + inputBuffer.toString());
                             System.out.flush();
                         }
                         continue;
@@ -42,14 +40,11 @@ public class BuiltinCompleter {
                     System.out.flush();
                     continue;
                 }
-                if (justCompleted) {
-                    justCompleted = false;
-                    continue;
-                }
                 if (ch == 127 || ch == 8) {
                     if (inputBuffer.length() > 0) {
                         inputBuffer.setLength(inputBuffer.length() - 1);
-                        System.out.print("\b \b");
+                        clearLine(prompt.length() + inputBuffer.length() + 1);
+                        System.out.print(prompt + inputBuffer.toString());
                         System.out.flush();
                     }
                     continue;
@@ -60,5 +55,9 @@ public class BuiltinCompleter {
             }
         }
         return inputBuffer.toString();
+    }
+
+    private static void clearLine(int totalLength) {
+        System.out.print("\r" + " ".repeat(totalLength) + "\r");
     }
 }
