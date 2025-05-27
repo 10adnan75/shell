@@ -1,30 +1,25 @@
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.io.IOException;
 
 import core.CommandHandler;
+import core.BuiltinCompleter;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    public static void main(String[] args) throws IOException {
         CommandHandler handler = new CommandHandler();
         Path currentDirectory = Paths.get(System.getProperty("user.dir"));
+        String[] builtins = { "echo", "exit" };
 
         while (true) {
-            System.out.print("$ ");
-            System.out.flush();
-
-            if (!scanner.hasNextLine()) {
+            String input = BuiltinCompleter.readLineWithCompletion("$ ", builtins);
+            if (input == null) {
                 break;
             }
-
-            String input = scanner.nextLine().trim();
-
+            input = input.trim();
             if (!input.isEmpty()) {
                 currentDirectory = handler.handleCommand(input, currentDirectory);
             }
         }
-
-        scanner.close();
     }
 }
