@@ -96,7 +96,6 @@ public class CommandHandler {
             ProcessBuilder[] processBuilders = new ProcessBuilder[pipelineParts.size()];
             Process[] processes = new Process[pipelineParts.size()];
 
-            // Create all process builders first
             for (int i = 0; i < pipelineParts.size(); i++) {
                 TokenizerResult part = pipelineParts.get(i);
                 String[] cmdTokensArray = part.tokens.toArray(new String[0]);
@@ -111,42 +110,30 @@ public class CommandHandler {
                 }
             }
 
-            // Start all processes
             for (int i = 0; i < processBuilders.length; i++) {
                 processes[i] = processBuilders[i].start();
             }
 
-            // Connect the processes in the pipeline
             for (int i = 0; i < processes.length - 1; i++) {
                 final int index = i;
                 try (var out = processes[index].getInputStream();
-                     var in = processes[index + 1].getOutputStream()) {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = out.read(buffer)) != -1) {
-                        in.write(buffer, 0, bytesRead);
-                        in.flush();
-                    }
-                    in.close();
+                        var in = processes[index + 1].getOutputStream()) {
+                    out.transferTo(in);
                 }
             }
 
-            // Handle the final output
             try (var out = processes[processes.length - 1].getInputStream()) {
                 out.transferTo(System.out);
             }
 
-            // Handle error streams
             for (Process process : processes) {
                 try (var err = process.getErrorStream()) {
                     err.transferTo(System.err);
                 }
             }
 
-            // Wait for the last process first
             processes[processes.length - 1].waitFor();
 
-            // Then wait for all other processes and destroy them if they're still running
             for (int i = 0; i < processes.length - 1; i++) {
                 if (processes[i].isAlive()) {
                     processes[i].destroy();

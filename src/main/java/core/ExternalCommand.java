@@ -62,14 +62,12 @@ public class ExternalCommand implements Command {
 
             Process process = pb.start();
 
-            // Handle output stream first
             if (redirectFile == null) {
                 try (var out = process.getInputStream()) {
                     out.transferTo(System.out);
                 }
             }
 
-            // Then handle error stream
             if (stderrRedirectFile == null) {
                 try (var err = process.getErrorStream()) {
                     err.transferTo(System.err);
