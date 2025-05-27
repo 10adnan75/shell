@@ -1,6 +1,8 @@
 package core;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BuiltinCompleter {
     public static String readLineWithCompletion(String prompt, String[] builtins) throws IOException {
@@ -19,13 +21,16 @@ public class BuiltinCompleter {
             }
             if (ch == '\t') {
                 String current = inputBuffer.toString();
+                List<String> matches = new ArrayList<>();
                 for (String builtin : builtins) {
                     if (builtin.startsWith(current)) {
-                        String completion = builtin.substring(current.length());
-                        System.out.print(completion + " ");
-                        inputBuffer.append(completion).append(' ');
-                        break;
+                        matches.add(builtin);
                     }
+                }
+                if (matches.size() == 1) {
+                    String completion = matches.get(0).substring(current.length());
+                    System.out.print(completion + " ");
+                    inputBuffer.append(completion).append(' ');
                 }
                 System.out.flush();
                 continue;
