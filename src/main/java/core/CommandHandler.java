@@ -92,55 +92,70 @@ public class CommandHandler {
     }
 
     private Path handlePipeline(List<TokenizerResult> pipelineParts, Path currentDirectory) {
+        if (pipelineParts.size() != 2) {
+            System.err.println("Only pipelines of two external commands are supported.");
+            return currentDirectory;
+        }
         try {
-            ProcessBuilder[] processBuilders = new ProcessBuilder[pipelineParts.size()];
-            Process[] processes = new Process[pipelineParts.size()];
-
-            for (int i = 0; i < pipelineParts.size(); i++) {
-                TokenizerResult part = pipelineParts.get(i);
-                String[] cmdTokensArray = part.tokens.toArray(new String[0]);
-                Command cmd = getCommand(cmdTokensArray, "", null, null);
-
-                if (cmd instanceof ExternalCommand) {
-                    processBuilders[i] = new ProcessBuilder(((ExternalCommand) cmd).getArgs());
-                    processBuilders[i].directory(currentDirectory.toFile());
-                } else {
-                    System.err.println("Pipeline only supports external commands");
-                    return currentDirectory;
-                }
+            TokenizerResult part1 = pipelineParts.get(0);
+            String[] cmdTokensArray1 = part1.tokens.toArray(new String[0]);
+            Command cmd1 = getCommand(cmdTokensArray1, "", null, null);
+            if (!(cmd1 instanceof ExternalCommand)) {
+                System.err.println("Pipeline only supports external commands");
+                return currentDirectory;
             }
+            ProcessBuilder pb1 = new ProcessBuilder(((ExternalCommand) cmd1).getArgs());
+            pb1.directory(currentDirectory.toFile());
 
-            for (int i = 0; i < processBuilders.length; i++) {
-                processes[i] = processBuilders[i].start();
+            TokenizerResult part2 = pipelineParts.get(1);
+            String[] cmdTokensArray2 = part2.tokens.toArray(new String[0]);
+            Command cmd2 = getCommand(cmdTokensArray2, "", null, null);
+            if (!(cmd2 instanceof ExternalCommand)) {
+                System.err.println("Pipeline only supports external commands");
+                return currentDirectory;
             }
+            ProcessBuilder pb2 = new ProcessBuilder(((ExternalCommand) cmd2).getArgs());
+            pb2.directory(currentDirectory.toFile());
 
-            for (int i = 0; i < processes.length - 1; i++) {
-                final int index = i;
-                try (var out = processes[index].getInputStream();
-                        var in = processes[index + 1].getOutputStream()) {
+            Process p1 = pb1.start();
+            Process p2 = pb2.start();
+
+            Thread pipeThread = new Thread(() -> {
+                try (var out = p1.getInputStream(); var in = p2.getOutputStream()) {
                     out.transferTo(in);
+                } catch (IOException e) {
                 }
-            }
+            });
+            pipeThread.start();
 
-            try (var out = processes[processes.length - 1].getInputStream()) {
+            Thread p1ErrThread = new Thread(() -> {
+                try (var err = p1.getErrorStream()) {
+                    err.transferTo(System.err);
+                } catch (IOException e) {
+                }
+            });
+            p1ErrThread.start();
+
+            Thread p2ErrThread = new Thread(() -> {
+                try (var err = p2.getErrorStream()) {
+                    err.transferTo(System.err);
+                } catch (IOException e) {
+                }
+            });
+            p2ErrThread.start();
+
+            try (var out = p2.getInputStream()) {
                 out.transferTo(System.out);
             }
 
-            for (Process process : processes) {
-                try (var err = process.getErrorStream()) {
-                    err.transferTo(System.err);
-                }
+            int p2Exit = p2.waitFor();
+            if (p1.isAlive()) {
+                p1.destroy();
             }
-
-            processes[processes.length - 1].waitFor();
-
-            for (int i = 0; i < processes.length - 1; i++) {
-                if (processes[i].isAlive()) {
-                    processes[i].destroy();
-                }
-                processes[i].waitFor();
-            }
-
+            p1.waitFor();
+            pipeThread.join();
+            p1ErrThread.join();
+            p2ErrThread.join();
             return currentDirectory;
         } catch (IOException | InterruptedException e) {
             System.err.println("Error executing pipeline: " + e.getMessage());
