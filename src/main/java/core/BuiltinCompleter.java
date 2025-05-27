@@ -28,9 +28,12 @@ public class BuiltinCompleter {
                     }
                 }
                 if (matches.size() == 1) {
-                    String completion = matches.get(0).substring(current.length());
-                    System.out.print(completion + " ");
-                    inputBuffer.append(completion).append(' ');
+                    String match = matches.get(0);
+                    if (!current.equals(match)) {
+                        String completion = match.substring(current.length());
+                        System.out.print(completion + " ");
+                        inputBuffer.append(completion).append(' ');
+                    }
                 }
                 System.out.flush();
                 continue;
