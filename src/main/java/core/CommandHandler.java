@@ -117,29 +117,21 @@ public class CommandHandler {
             ProcessBuilder pb2 = new ProcessBuilder(((ExternalCommand) cmd2).getArgs());
             pb2.directory(currentDirectory.toFile());
 
-            Process p1 = pb1.start();
-            Process p2 = pb2.start();
-
-            Thread pipeThread = new Thread(() -> {
-                try (var out = p1.getInputStream(); var in = p2.getOutputStream()) {
-                    out.transferTo(in);
-                } catch (IOException e) {
-                }
-            });
-            pipeThread.start();
+            var processes = ProcessBuilder.startPipeline(java.util.List.of(pb1, pb2));
+            Process p1 = processes.get(0);
+            Process p2 = processes.get(1);
 
             Thread p1ErrThread = new Thread(() -> {
                 try (var err = p1.getErrorStream()) {
                     err.transferTo(System.err);
-                } catch (IOException e) {
+                } catch (Exception ignored) {
                 }
             });
             p1ErrThread.start();
-
             Thread p2ErrThread = new Thread(() -> {
                 try (var err = p2.getErrorStream()) {
                     err.transferTo(System.err);
-                } catch (IOException e) {
+                } catch (Exception ignored) {
                 }
             });
             p2ErrThread.start();
@@ -153,7 +145,6 @@ public class CommandHandler {
                 p1.destroy();
             }
             p1.waitFor();
-            pipeThread.join();
             p1ErrThread.join();
             p2ErrThread.join();
             return currentDirectory;
