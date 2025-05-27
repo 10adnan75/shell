@@ -1,7 +1,6 @@
 package core;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BuiltinCompleter {
@@ -10,6 +9,10 @@ public class BuiltinCompleter {
         System.out.flush();
         StringBuilder inputBuffer = new StringBuilder();
         boolean justCompleted = false;
+        Trie trie = new Trie();
+        for (String builtin : builtins) {
+            trie.insert(builtin);
+        }
         try (var scope = Termios.enableRawMode()) {
             while (true) {
                 int ch = System.in.read();
@@ -23,12 +26,7 @@ public class BuiltinCompleter {
                 }
                 if (ch == '\t') {
                     String current = inputBuffer.toString();
-                    List<String> matches = new ArrayList<>();
-                    for (String builtin : builtins) {
-                        if (builtin.startsWith(current)) {
-                            matches.add(builtin);
-                        }
-                    }
+                    List<String> matches = trie.getCompletions(current);
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
