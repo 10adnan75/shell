@@ -9,6 +9,7 @@ public class BuiltinCompleter {
         System.out.print(prompt);
         System.out.flush();
         StringBuilder inputBuffer = new StringBuilder();
+        boolean justCompleted = false;
         try (var scope = Termios.enableRawMode()) {
             while (true) {
                 int ch = System.in.read();
@@ -41,12 +42,16 @@ public class BuiltinCompleter {
                                     System.in.read();
                                 }
                             } catch (Exception ignore) {
-
                             }
+                            justCompleted = true;
                         }
                         continue;
                     }
                     System.out.flush();
+                    continue;
+                }
+                if (justCompleted) {
+                    justCompleted = false;
                     continue;
                 }
                 if (ch == 127 || ch == 8) {
