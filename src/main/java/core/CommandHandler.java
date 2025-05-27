@@ -100,12 +100,47 @@ public class CommandHandler {
         try {
             Command[] commands = new Command[n];
             boolean[] isBuiltin = new boolean[n];
+            boolean allExternal = true;
             for (int i = 0; i < n; i++) {
                 String[] tokens = pipelineParts.get(i).tokens.toArray(new String[0]);
                 commands[i] = getCommand(tokens, "", null, null);
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
                         commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
                         commands[i] instanceof PwdCommand);
+                if (isBuiltin[i]) {
+                    allExternal = false;
+                }
+            }
+
+            if (allExternal) {
+                java.util.List<ProcessBuilder> builders = new java.util.ArrayList<>();
+                for (int i = 0; i < n; i++) {
+                    ProcessBuilder pb = new ProcessBuilder(((ExternalCommand) commands[i]).getArgs());
+                    pb.directory(currentDirectory.toFile());
+                    builders.add(pb);
+                }
+                var processes = ProcessBuilder.startPipeline(builders);
+                java.util.List<Thread> errThreads = new java.util.ArrayList<>();
+                for (Process p : processes) {
+                    Thread t = new Thread(() -> {
+                        try (var err = p.getErrorStream()) {
+                            err.transferTo(System.err);
+                        } catch (Exception ignored) {
+                        }
+                    });
+                    t.start();
+                    errThreads.add(t);
+                }
+                try (var out = processes.get(processes.size() - 1).getInputStream()) {
+                    out.transferTo(System.out);
+                }
+                for (Process p : processes) {
+                    p.waitFor();
+                }
+                for (Thread t : errThreads) {
+                    t.join();
+                }
+                return currentDirectory;
             }
 
             java.io.PipedInputStream[] pipeIns = new java.io.PipedInputStream[n - 1];
