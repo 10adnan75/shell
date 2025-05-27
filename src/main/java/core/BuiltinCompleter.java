@@ -36,6 +36,13 @@ public class BuiltinCompleter {
                             System.out.flush();
                             inputBuffer.setLength(0);
                             inputBuffer.append(match).append(' ');
+                            try {
+                                while (System.in.available() > 0) {
+                                    System.in.read();
+                                }
+                            } catch (Exception ignore) {
+
+                            }
                         }
                         continue;
                     }
