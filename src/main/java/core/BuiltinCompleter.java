@@ -37,6 +37,7 @@ public class BuiltinCompleter {
                             inputBuffer.setLength(0);
                             inputBuffer.append(match).append(' ');
                         }
+                        continue;
                     }
                     System.out.flush();
                     continue;
