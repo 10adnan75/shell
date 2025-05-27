@@ -12,6 +12,7 @@ public class BuiltinCompleter {
         for (String builtin : builtins) {
             trie.insert(builtin);
         }
+        int maxLineLength = prompt.length();
         try (Termios _ = Termios.enableRawMode()) {
             while (true) {
                 int ch = System.in.read();
@@ -31,7 +32,9 @@ public class BuiltinCompleter {
                         if (!current.equals(match)) {
                             inputBuffer.setLength(0);
                             inputBuffer.append(match).append(' ');
-                            clearLine(prompt.length() + Math.max(current.length(), match.length()));
+                            int lineLen = prompt.length() + inputBuffer.length();
+                            maxLineLength = Math.max(maxLineLength, lineLen);
+                            clearLine(maxLineLength);
                             System.out.print(prompt + inputBuffer.toString());
                             System.out.flush();
                         }
@@ -43,7 +46,7 @@ public class BuiltinCompleter {
                 if (ch == 127 || ch == 8) {
                     if (inputBuffer.length() > 0) {
                         inputBuffer.setLength(inputBuffer.length() - 1);
-                        clearLine(prompt.length() + inputBuffer.length() + 1);
+                        clearLine(maxLineLength);
                         System.out.print(prompt + inputBuffer.toString());
                         System.out.flush();
                     }
@@ -52,6 +55,8 @@ public class BuiltinCompleter {
                 inputBuffer.append((char) ch);
                 System.out.print((char) ch);
                 System.out.flush();
+                int lineLen = prompt.length() + inputBuffer.length();
+                maxLineLength = Math.max(maxLineLength, lineLen);
             }
         }
         return inputBuffer.toString();
