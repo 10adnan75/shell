@@ -93,61 +93,168 @@ public class CommandHandler {
 
     private Path handlePipeline(List<TokenizerResult> pipelineParts, Path currentDirectory) {
         if (pipelineParts.size() != 2) {
-            System.err.println("Only pipelines of two external commands are supported.");
+            System.err.println("Only pipelines of two commands are supported.");
             return currentDirectory;
         }
         try {
             TokenizerResult part1 = pipelineParts.get(0);
-            String[] cmdTokensArray1 = part1.tokens.toArray(new String[0]);
-            Command cmd1 = getCommand(cmdTokensArray1, "", null, null);
-            if (!(cmd1 instanceof ExternalCommand)) {
-                System.err.println("Pipeline only supports external commands");
-                return currentDirectory;
-            }
-            ProcessBuilder pb1 = new ProcessBuilder(((ExternalCommand) cmd1).getArgs());
-            pb1.directory(currentDirectory.toFile());
-
             TokenizerResult part2 = pipelineParts.get(1);
+            String[] cmdTokensArray1 = part1.tokens.toArray(new String[0]);
             String[] cmdTokensArray2 = part2.tokens.toArray(new String[0]);
+            Command cmd1 = getCommand(cmdTokensArray1, "", null, null);
             Command cmd2 = getCommand(cmdTokensArray2, "", null, null);
-            if (!(cmd2 instanceof ExternalCommand)) {
-                System.err.println("Pipeline only supports external commands");
+
+            boolean isBuiltin1 = (cmd1 instanceof EchoCommand || cmd1 instanceof CdCommand ||
+                    cmd1 instanceof ExitCommand || cmd1 instanceof TypeCommand ||
+                    cmd1 instanceof PwdCommand);
+            boolean isBuiltin2 = (cmd2 instanceof EchoCommand || cmd2 instanceof CdCommand ||
+                    cmd2 instanceof ExitCommand || cmd2 instanceof TypeCommand ||
+                    cmd2 instanceof PwdCommand);
+
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            java.io.InputStream originalIn = System.in;
+
+            if (isBuiltin1 && isBuiltin2) {
+                java.io.PipedOutputStream pipeOut = new java.io.PipedOutputStream();
+                java.io.PipedInputStream pipeIn = new java.io.PipedInputStream(pipeOut);
+                Thread t1 = new Thread(() -> {
+                    try {
+                        System.setOut(new PrintStream(pipeOut, true));
+                        cmd1.execute(cmdTokensArray1, "", currentDirectory);
+                        System.out.flush();
+                        pipeOut.close();
+                    } catch (Exception e) {
+                    } finally {
+                        System.setOut(originalOut);
+                    }
+                });
+                Thread t2 = new Thread(() -> {
+                    try {
+                        System.setIn(pipeIn);
+                        cmd2.execute(cmdTokensArray2, "", currentDirectory);
+                    } catch (Exception e) {
+                    } finally {
+                        System.setIn(originalIn);
+                    }
+                });
+                t1.start();
+                t2.start();
+                t1.join();
+                t2.join();
+                return currentDirectory;
+            } else if (isBuiltin1) {
+                java.io.PipedOutputStream pipeOut = new java.io.PipedOutputStream();
+                java.io.PipedInputStream pipeIn = new java.io.PipedInputStream(pipeOut);
+                Thread t1 = new Thread(() -> {
+                    try {
+                        System.setOut(new PrintStream(pipeOut, true));
+                        cmd1.execute(cmdTokensArray1, "", currentDirectory);
+                        System.out.flush();
+                        pipeOut.close();
+                    } catch (Exception e) {
+                    } finally {
+                        System.setOut(originalOut);
+                    }
+                });
+                t1.start();
+                ProcessBuilder pb2 = new ProcessBuilder(((ExternalCommand) cmd2).getArgs());
+                pb2.directory(currentDirectory.toFile());
+                pb2.redirectInput(ProcessBuilder.Redirect.PIPE);
+                Process p2 = pb2.start();
+                Thread pipeToProcess = new Thread(() -> {
+                    try (var out = p2.getOutputStream()) {
+                        pipeIn.transferTo(out);
+                    } catch (Exception e) {
+                    }
+                });
+                pipeToProcess.start();
+                Thread p2ErrThread = new Thread(() -> {
+                    try (var err = p2.getErrorStream()) {
+                        err.transferTo(System.err);
+                    } catch (Exception ignored) {
+                    }
+                });
+                p2ErrThread.start();
+                try (var out = p2.getInputStream()) {
+                    out.transferTo(System.out);
+                }
+                t1.join();
+                pipeToProcess.join();
+                int p2Exit = p2.waitFor();
+                p2ErrThread.join();
+                return currentDirectory;
+            } else if (isBuiltin2) {
+                ProcessBuilder pb1 = new ProcessBuilder(((ExternalCommand) cmd1).getArgs());
+                pb1.directory(currentDirectory.toFile());
+                pb1.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                Process p1 = pb1.start();
+                java.io.PipedOutputStream pipeOut = new java.io.PipedOutputStream();
+                java.io.PipedInputStream pipeIn = new java.io.PipedInputStream(pipeOut);
+                Thread processToPipe = new Thread(() -> {
+                    try (var in = p1.getInputStream()) {
+                        in.transferTo(pipeOut);
+                        pipeOut.close();
+                    } catch (Exception e) {
+                    }
+                });
+                processToPipe.start();
+                Thread p1ErrThread = new Thread(() -> {
+                    try (var err = p1.getErrorStream()) {
+                        err.transferTo(System.err);
+                    } catch (Exception ignored) {
+                    }
+                });
+                p1ErrThread.start();
+                Thread t2 = new Thread(() -> {
+                    try {
+                        System.setIn(pipeIn);
+                        cmd2.execute(cmdTokensArray2, "", currentDirectory);
+                    } catch (Exception e) {
+                    } finally {
+                        System.setIn(originalIn);
+                    }
+                });
+                t2.start();
+                processToPipe.join();
+                t2.join();
+                int p1Exit = p1.waitFor();
+                p1ErrThread.join();
+                return currentDirectory;
+            } else {
+                ProcessBuilder pb1 = new ProcessBuilder(((ExternalCommand) cmd1).getArgs());
+                pb1.directory(currentDirectory.toFile());
+                ProcessBuilder pb2 = new ProcessBuilder(((ExternalCommand) cmd2).getArgs());
+                pb2.directory(currentDirectory.toFile());
+                var processes = ProcessBuilder.startPipeline(java.util.List.of(pb1, pb2));
+                Process p1 = processes.get(0);
+                Process p2 = processes.get(1);
+                Thread p1ErrThread = new Thread(() -> {
+                    try (var err = p1.getErrorStream()) {
+                        err.transferTo(System.err);
+                    } catch (Exception ignored) {
+                    }
+                });
+                p1ErrThread.start();
+                Thread p2ErrThread = new Thread(() -> {
+                    try (var err = p2.getErrorStream()) {
+                        err.transferTo(System.err);
+                    } catch (Exception ignored) {
+                    }
+                });
+                p2ErrThread.start();
+                try (var out = p2.getInputStream()) {
+                    out.transferTo(System.out);
+                }
+                int p2Exit = p2.waitFor();
+                if (p1.isAlive()) {
+                    p1.destroy();
+                }
+                p1.waitFor();
+                p1ErrThread.join();
+                p2ErrThread.join();
                 return currentDirectory;
             }
-            ProcessBuilder pb2 = new ProcessBuilder(((ExternalCommand) cmd2).getArgs());
-            pb2.directory(currentDirectory.toFile());
-
-            var processes = ProcessBuilder.startPipeline(java.util.List.of(pb1, pb2));
-            Process p1 = processes.get(0);
-            Process p2 = processes.get(1);
-
-            Thread p1ErrThread = new Thread(() -> {
-                try (var err = p1.getErrorStream()) {
-                    err.transferTo(System.err);
-                } catch (Exception ignored) {
-                }
-            });
-            p1ErrThread.start();
-            Thread p2ErrThread = new Thread(() -> {
-                try (var err = p2.getErrorStream()) {
-                    err.transferTo(System.err);
-                } catch (Exception ignored) {
-                }
-            });
-            p2ErrThread.start();
-
-            try (var out = p2.getInputStream()) {
-                out.transferTo(System.out);
-            }
-
-            int p2Exit = p2.waitFor();
-            if (p1.isAlive()) {
-                p1.destroy();
-            }
-            p1.waitFor();
-            p1ErrThread.join();
-            p2ErrThread.join();
-            return currentDirectory;
         } catch (IOException | InterruptedException e) {
             System.err.println("Error executing pipeline: " + e.getMessage());
             if (e instanceof InterruptedException) {
