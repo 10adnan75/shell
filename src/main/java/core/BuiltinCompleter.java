@@ -30,12 +30,9 @@ public class BuiltinCompleter {
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
-                            inputBuffer.setLength(0);
-                            inputBuffer.append(match).append(' ');
-                            int lineLen = prompt.length() + inputBuffer.length();
-                            maxLineLength = Math.max(maxLineLength, lineLen);
-                            clearLine(maxLineLength);
-                            System.out.print(prompt + inputBuffer.toString());
+                            String completion = match.substring(current.length()) + " ";
+                            inputBuffer.append(completion);
+                            System.out.print(completion);
                             System.out.flush();
                         }
                         continue;
