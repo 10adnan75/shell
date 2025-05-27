@@ -30,18 +30,10 @@ public class BuiltinCompleter {
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
-                            System.out.print("\r" + " ".repeat(prompt.length() + inputBuffer.length()) + "\r");
-                            System.out.print(prompt + match + " ");
+                            String completion = match.substring(current.length());
+                            inputBuffer.append(completion).append(' ');
+                            System.out.print(completion + " ");
                             System.out.flush();
-                            inputBuffer.setLength(0);
-                            inputBuffer.append(match).append(' ');
-                            try {
-                                while (System.in.available() > 0) {
-                                    System.in.read();
-                                }
-                            } catch (Exception ignore) {
-                            }
-                            justCompleted = true;
                         }
                         continue;
                     }
