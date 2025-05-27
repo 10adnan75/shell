@@ -31,8 +31,10 @@ public class BuiltinCompleter {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
                             String completion = match.substring(current.length());
-                            inputBuffer.append(completion).append(' ');
-                            System.out.print(completion + " ");
+                            inputBuffer.append(completion);
+                            System.out.print(completion);
+                            inputBuffer.append(' ');
+                            System.out.print(' ');
                             System.out.flush();
                         }
                         continue;

@@ -13,7 +13,7 @@ public class Trie {
     public void insert(String word) {
         Node node = root;
         for (char c : word.toCharArray()) {
-            node = node.children.computeIfAbsent(c, k -> new Node());
+            node = node.children.computeIfAbsent(c, _ -> new Node());
         }
         node.isWord = true;
     }
