@@ -30,7 +30,17 @@ public class BuiltinCompleter {
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
-                            String completion = match.substring(current.length()) + " ";
+                            for (int i = 0; i < current.length(); i++) {
+                                System.out.print("\b");
+                            }
+                            for (int i = 0; i < current.length(); i++) {
+                                System.out.print(" ");
+                            }
+                            for (int i = 0; i < current.length(); i++) {
+                                System.out.print("\b");
+                            }
+                            String completion = match + " ";
+                            inputBuffer.setLength(0);
                             inputBuffer.append(completion);
                             System.out.print(completion);
                             System.out.flush();
