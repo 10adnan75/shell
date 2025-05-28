@@ -31,6 +31,7 @@ public class BuiltinCompleter {
                         String match = matches.get(0);
                         if (!current.equals(match)) {
                             clearLine(maxLineLength);
+
                             String completion = match + " ";
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
@@ -38,9 +39,7 @@ public class BuiltinCompleter {
                             System.out.flush();
                             maxLineLength = Math.max(maxLineLength, prompt.length() + completion.length());
                         }
-                        continue;
                     }
-                    System.out.flush();
                     continue;
                 }
                 if (ch == 127 || ch == 8) {
@@ -63,6 +62,9 @@ public class BuiltinCompleter {
     }
 
     private static void clearLine(int totalLength) {
-        System.out.print("\r" + " ".repeat(totalLength) + "\r");
+        System.out.print("\r");
+        System.out.print(" ".repeat(totalLength));
+        System.out.print("\r");
+        System.out.flush();
     }
 }
