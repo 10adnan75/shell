@@ -14,6 +14,8 @@ public class BuiltinCompleter {
         }
         int maxLineLength = prompt.length();
         try (Termios _ = Termios.enableRawMode()) {
+            System.out.print("\033[12l");
+            System.out.flush();
             while (true) {
                 int ch = System.in.read();
                 if (ch == -1) {
