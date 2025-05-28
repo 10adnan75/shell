@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         CommandHandler handler = new CommandHandler();
         Path currentDirectory = Paths.get(System.getProperty("user.dir"));
-        String[] builtins = { "echo", "exit" };
+        String[] builtins = { "echo", "exit", "pwd", "cd", "type" };
 
         while (true) {
             String input = BuiltinCompleter.readLineWithCompletion("$ ", builtins);

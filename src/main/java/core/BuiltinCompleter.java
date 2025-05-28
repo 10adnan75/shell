@@ -57,11 +57,13 @@ public class BuiltinCompleter {
                     }
                     continue;
                 }
-                inputBuffer.append((char) ch);
-                System.out.print((char) ch);
-                System.out.flush();
-                int lineLen = prompt.length() + inputBuffer.length();
-                maxLineLength = Math.max(maxLineLength, lineLen);
+                if (ch >= 32 && ch <= 126) {
+                    inputBuffer.append((char) ch);
+                    System.out.print((char) ch);
+                    System.out.flush();
+                    int lineLen = prompt.length() + inputBuffer.length();
+                    maxLineLength = Math.max(maxLineLength, lineLen);
+                }
             }
         }
     }
