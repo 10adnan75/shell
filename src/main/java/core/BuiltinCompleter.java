@@ -29,9 +29,9 @@ public class BuiltinCompleter {
                     List<String> matches = trie.getCompletions(current);
                     if (matches.size() == 1) {
                         String match = matches.get(0);
-                        if (!current.equals(match)) {
-                            clearLine(maxLineLength);
-
+                        if (!current.equals(match) && match.startsWith(current)) {
+                            System.out.print("\033[2K\r");
+                            System.out.flush();
                             String completion = match + " ";
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
@@ -62,9 +62,7 @@ public class BuiltinCompleter {
     }
 
     private static void clearLine(int totalLength) {
-        System.out.print("\r");
-        System.out.print(" ".repeat(totalLength));
-        System.out.print("\r");
+        System.out.print("\033[2K\r");
         System.out.flush();
     }
 }
