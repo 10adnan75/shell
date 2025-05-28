@@ -35,7 +35,7 @@ public class BuiltinCompleter {
                             String completion = match + " ";
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
-                            System.out.print(prompt + completion);
+                            // System.out.print(prompt + completion);
                             System.out.flush();
                             maxLineLength = Math.max(maxLineLength, prompt.length() + completion.length());
                         }
