@@ -33,7 +33,6 @@ public class BuiltinCompleter {
                         String match = matches.get(0);
 
                         if (!current.equals(match) && match.startsWith(current)) {
-                            // Clear the current line
                             System.err.print("\033[2K\r");
                             System.err.flush();
 
@@ -41,7 +40,6 @@ public class BuiltinCompleter {
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
 
-                            // Redraw the prompt and completion
                             System.err.print(prompt + completion);
                             System.err.flush();
 
@@ -59,7 +57,6 @@ public class BuiltinCompleter {
                     }
                     continue;
                 }
-                // Only echo printable characters to stderr (terminal), not stdout
                 if (ch >= 32 && ch <= 126) {
                     inputBuffer.append((char) ch);
                     System.err.print((char) ch);
