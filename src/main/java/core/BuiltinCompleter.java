@@ -22,21 +22,28 @@ public class BuiltinCompleter {
                 }
                 if (ch == '\n' || ch == '\r') {
                     System.out.println();
-                    break;
+                    return inputBuffer.toString().trim();
                 }
                 if (ch == '\t') {
                     String current = inputBuffer.toString();
                     List<String> matches = trie.getCompletions(current);
                     if (matches.size() == 1) {
                         String match = matches.get(0);
+                        // Only complete if current input is a prefix of the match
                         if (!current.equals(match) && match.startsWith(current)) {
+                            // Use ANSI escape to clear entire line and move cursor to start
                             System.out.print("\033[2K\r");
                             System.out.flush();
+                            
+                            // Set the completion (command + space)
                             String completion = match + " ";
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
+                            
+                            // Print the prompt and completion
                             System.out.print(prompt + completion);
                             System.out.flush();
+                            
                             maxLineLength = Math.max(maxLineLength, prompt.length() + completion.length());
                         }
                     }
@@ -58,10 +65,11 @@ public class BuiltinCompleter {
                 maxLineLength = Math.max(maxLineLength, lineLen);
             }
         }
-        return inputBuffer.toString();
+        // return inputBuffer.toString();
     }
 
     private static void clearLine(int totalLength) {
+        // Use ANSI escape sequence to clear the entire line
         System.out.print("\033[2K\r");
         System.out.flush();
     }
