@@ -31,7 +31,9 @@ public class ShellInputHandler {
                 System.out.flush();
                 System.err.flush();
                 String tempString = "";
-                System.out.print("$ ");
+                if (System.console() != null) {
+                    System.out.print("$ ");
+                }
                 history.resetIndex();
 
                 while (true) {
