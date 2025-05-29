@@ -246,6 +246,8 @@ public class CommandHandler {
         int n = parts.size();
         if (n < 2) {
             System.err.println("Pipeline must have at least two commands.");
+            System.out.flush();
+            System.err.flush();
             return currentDirectory;
         }
         try {
@@ -260,6 +262,8 @@ public class CommandHandler {
                 commands[i] = this.getCommand(cmdArray, "", null, null);
                 if (commands[i] instanceof NoOpCommand) {
                     System.err.println(tokens.get(0) + ": command not found");
+                    System.out.flush();
+                    System.err.flush();
                     return currentDirectory;
                 }
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
@@ -298,6 +302,8 @@ public class CommandHandler {
                 for (Thread t : errThreads) {
                     t.join();
                 }
+                System.out.flush();
+                System.err.flush();
                 return currentDirectory;
             }
 
@@ -398,12 +404,16 @@ public class CommandHandler {
                     processes[i].waitFor();
                 }
             }
+            System.out.flush();
+            System.err.flush();
             return currentDirectory;
         } catch (IOException | InterruptedException e) {
             System.err.println("Error executing pipeline: " + e.getMessage());
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+            System.out.flush();
+            System.err.flush();
             return currentDirectory;
         }
     }
