@@ -22,7 +22,7 @@ public class EchoCommand implements Command {
             output.append(arg);
         }
 
-        System.out.println(output.toString());
+        System.err.println(output.toString());
         return currentDirectory;
     }
 }

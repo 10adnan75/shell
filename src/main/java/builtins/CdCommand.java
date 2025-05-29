@@ -8,7 +8,7 @@ public class CdCommand implements Command {
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
         if (args.length < 2) {
-            System.out.println("Usage: cd <directory>");
+            System.err.println("Usage: cd <directory>");
             return currentDirectory;
         }
 
@@ -28,7 +28,7 @@ public class CdCommand implements Command {
         if (dir.exists() && dir.isDirectory()) {
             return newPath;
         } else {
-            System.out.println("cd: " + args[1] + ": No such file or directory");
+            System.err.println("cd: " + args[1] + ": No such file or directory");
             return currentDirectory;
         }
     }

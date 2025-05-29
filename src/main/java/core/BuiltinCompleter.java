@@ -1,15 +1,12 @@
 package core;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import java.util.List;
 
 public class BuiltinCompleter {
     public static String readLineWithCompletion(String prompt, String[] builtins, List<String> history)
             throws java.io.IOException {
-        System.out.print(prompt);
-        System.out.flush();
+        System.err.print(prompt);
+        System.err.flush();
         StringBuilder buffer = new StringBuilder();
         int maxLineLength = prompt.length();
         int historyIndex = history.size();
@@ -17,11 +14,11 @@ public class BuiltinCompleter {
             while (true) {
                 int ch = System.in.read();
                 if (ch == -1) {
-                    System.out.println();
+                    System.err.println();
                     return null;
                 }
                 if (ch == '\n' || ch == '\r') {
-                    System.out.println();
+                    System.err.println();
                     return buffer.toString().trim();
                 }
                 if (ch == 27) {
@@ -33,8 +30,8 @@ public class BuiltinCompleter {
                             buffer.setLength(0);
                             buffer.append(history.get(historyIndex));
                             clearLine(maxLineLength);
-                            System.out.print(prompt + buffer.toString());
-                            System.out.flush();
+                            System.err.print(prompt + buffer.toString());
+                            System.err.flush();
                             maxLineLength = Math.max(maxLineLength, prompt.length() + buffer.length());
                         }
                         continue;
@@ -44,8 +41,8 @@ public class BuiltinCompleter {
                     if (buffer.length() > 0) {
                         buffer.setLength(buffer.length() - 1);
                         clearLine(maxLineLength);
-                        System.out.print(prompt + buffer.toString());
-                        System.out.flush();
+                        System.err.print(prompt + buffer.toString());
+                        System.err.flush();
                     }
                     continue;
                 }
@@ -54,24 +51,24 @@ public class BuiltinCompleter {
                 }
                 if (ch >= 32 && ch <= 126) {
                     buffer.append((char) ch);
-                    System.out.print((char) ch);
-                    System.out.flush();
+                    System.err.print((char) ch);
+                    System.err.flush();
                     int lineLen = prompt.length() + buffer.length();
                     maxLineLength = Math.max(maxLineLength, lineLen);
                 }
             }
         } catch (Exception e) {
-            System.out.flush();
+            System.err.flush();
             StringBuilder fallbackBuffer = new StringBuilder();
             int c;
             while ((c = System.in.read()) != -1) {
                 if (c == '\n' || c == '\r') {
-                    System.out.println();
+                    System.err.println();
                     break;
                 }
                 fallbackBuffer.append((char) c);
-                System.out.print((char) c);
-                System.out.flush();
+                System.err.print((char) c);
+                System.err.flush();
             }
             if (c == -1 && fallbackBuffer.length() == 0)
                 return null;
@@ -80,7 +77,7 @@ public class BuiltinCompleter {
     }
 
     private static void clearLine(int totalLength) {
-        System.out.print("\033[2K\r");
-        System.out.flush();
+        System.err.print("\033[2K\r");
+        System.err.flush();
     }
 }

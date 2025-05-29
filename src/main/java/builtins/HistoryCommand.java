@@ -22,7 +22,7 @@ public class HistoryCommand implements Command {
             }
         }
         for (int i = start; i < history.size(); i++) {
-            System.out.printf("    %d  %s%n", i + 1, history.get(i));
+            System.err.printf("    %d  %s%n", i + 1, history.get(i));
         }
         return currentDirectory;
     }
