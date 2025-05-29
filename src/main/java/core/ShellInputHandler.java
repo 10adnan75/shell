@@ -23,6 +23,9 @@ public class ShellInputHandler {
                 return false;
             }
         }
+        if (System.getenv("TERM") == null) {
+            return false;
+        }
         return System.console() != null;
     }
 

@@ -253,13 +253,11 @@ public class CommandHandler {
             return currentDirectory;
         }
         try {
-            // Tokenize each part
             List<List<String>> tokenizedParts = new ArrayList<>();
             for (String part : parts) {
                 tokenizedParts.add(Arrays.asList(part.trim().split("\\s+")));
             }
 
-            // Check if all commands are external
             boolean allExternal = true;
             for (List<String> tokens : tokenizedParts) {
                 if (tokens.isEmpty() || Arrays.asList(SHELL_COMMANDS).contains(tokens.get(0))) {
@@ -301,7 +299,6 @@ public class CommandHandler {
                 return currentDirectory;
             }
 
-            // Mixed pipeline: set up pipes
             java.io.PipedInputStream[] pipeIns = new java.io.PipedInputStream[n - 1];
             java.io.PipedOutputStream[] pipeOuts = new java.io.PipedOutputStream[n - 1];
             for (int i = 0; i < n - 1; i++) {
