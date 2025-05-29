@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import builtins.*;
 
@@ -19,6 +20,7 @@ public class CommandHandler {
     private Path currentDirectory;
     private final PrintStream originalOut;
     private final PrintStream originalErr;
+    private final List<String> history;
 
     public CommandHandler() {
         this.builtinCommands = new HashMap<>();
@@ -27,12 +29,17 @@ public class CommandHandler {
         this.builtinCommands.put("pwd", new PwdCommand());
         this.builtinCommands.put("cd", new CdCommand());
         this.builtinCommands.put("type", new TypeCommand());
+        this.history = new ArrayList<>();
+        this.builtinCommands.put("history", new HistoryCommand(history));
         this.currentDirectory = Paths.get(System.getProperty("user.dir"));
         this.originalOut = System.out;
         this.originalErr = System.err;
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
+        if (!input.trim().isEmpty()) {
+            history.add(input);
+        }
         Tokenizer tokenizer = new Tokenizer();
         TokenizerResult result = tokenizer.tokenize(input);
 
@@ -103,7 +110,7 @@ public class CommandHandler {
             boolean allExternal = true;
             for (int i = 0; i < n; i++) {
                 String[] tokens = pipelineParts.get(i).tokens.toArray(new String[0]);
-                commands[i] = getCommand(tokens, "", null, null);
+                commands[i] = this.getCommand(tokens, "", null, null);
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
                         commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
                         commands[i] instanceof PwdCommand);
@@ -253,7 +260,7 @@ public class CommandHandler {
     private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
             Path currentDirectory, File redirectFile, File stderrRedirectFile, boolean isAppend,
             boolean isStderrAppend) {
-        Command cmd = getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
+        Command cmd = this.getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
 
         boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
                 cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
@@ -328,7 +335,7 @@ public class CommandHandler {
         }
     }
 
-    public static Command getCommand(String[] tokens, String rawInput, File redirectFile, File stderrRedirectFile) {
+    public Command getCommand(String[] tokens, String rawInput, File redirectFile, File stderrRedirectFile) {
         if (tokens.length == 0) {
             return new NoOpCommand();
         }
@@ -346,6 +353,7 @@ public class CommandHandler {
             case "type" -> new TypeCommand();
             case "pwd" -> new PwdCommand();
             case "cd" -> new CdCommand();
+            case "history" -> new HistoryCommand(this.history);
             default -> {
                 String path = getPath(cmdUnquoted);
                 if (path == null) {
