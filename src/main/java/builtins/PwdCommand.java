@@ -1,19 +1,27 @@
 /**
  * PwdCommand.java
  *
- * Implements the 'pwd' (print working directory) builtin command.
+ * <p>Implements the 'pwd' (print working directory) builtin command.
  *
- * Author: Adnan Mazharuddin Shaikh
+ * <p>Author: Adnan Mazharuddin Shaikh
  */
 package builtins;
 
 import java.nio.file.Path;
 
+/** Implements the 'pwd' (print working directory) builtin command. */
 public class PwdCommand implements Command {
-    
-    @Override
-    public Path execute(String[] args, String rawInput, Path currentDirectory) {
-        System.out.println(currentDirectory.toAbsolutePath());
-        return currentDirectory;
-    }
+  /**
+   * Prints the current directory.
+   *
+   * @param args The command and its arguments.
+   * @param rawInput The raw input string.
+   * @param currentDirectory The current working directory.
+   * @return The current directory (unchanged).
+   */
+  @Override
+  public Path execute(String[] args, String rawInput, Path currentDirectory) {
+    System.out.println(currentDirectory.toAbsolutePath());
+    return currentDirectory;
+  }
 }

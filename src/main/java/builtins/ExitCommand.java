@@ -1,19 +1,27 @@
 /**
  * ExitCommand.java
  *
- * Implements the 'exit' builtin command.
+ * <p>Implements the 'exit' builtin command.
  *
- * Author: Adnan Mazharuddin Shaikh
+ * <p>Author: Adnan Mazharuddin Shaikh
  */
 package builtins;
 
 import java.nio.file.Path;
 
+/** Implements the 'exit' builtin command. */
 public class ExitCommand implements Command {
-
-    @Override
-    public Path execute(String[] args, String rawInput, Path currentDirectory) {
-        System.exit(0);
-        return currentDirectory;
-    }
+  /**
+   * Exits the shell with the given status code.
+   *
+   * @param args The command and its arguments.
+   * @param rawInput The raw input string.
+   * @param currentDirectory The current working directory.
+   * @return The current directory (unreachable).
+   */
+  @Override
+  public Path execute(String[] args, String rawInput, Path currentDirectory) {
+    System.exit(0);
+    return currentDirectory;
+  }
 }

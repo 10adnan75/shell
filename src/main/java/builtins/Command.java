@@ -5,11 +5,18 @@ import java.nio.file.Path;
 /**
  * Command.java
  *
- * Interface for all shell commands (builtins and external).
+ * <p>Interface for all shell commands (builtins and external).
  *
- * Author: Adnan Mazharuddin Shaikh
+ * <p>Author: Adnan Mazharuddin Shaikh
  */
 public interface Command {
-
-    Path execute(String[] args, String rawInput, Path currentDirectory);
+  /**
+   * Executes the command and returns the (possibly updated) current directory.
+   *
+   * @param args The command and its arguments.
+   * @param rawInput The raw input string.
+   * @param currentDirectory The current working directory.
+   * @return The updated current directory after execution.
+   */
+  Path execute(String[] args, String rawInput, Path currentDirectory);
 }
