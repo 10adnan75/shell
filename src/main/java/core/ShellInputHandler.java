@@ -28,6 +28,8 @@ public class ShellInputHandler {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
             while (running) {
+                System.out.flush();
+                System.err.flush();
                 String tempString = "";
                 System.out.print("$ ");
                 history.resetIndex();
