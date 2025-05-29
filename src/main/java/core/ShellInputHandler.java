@@ -37,7 +37,12 @@ public class ShellInputHandler {
                 history.resetIndex();
 
                 while (true) {
-                    char c = (char) reader.read();
+                    int readVal = reader.read();
+                    if (readVal == -1) {
+                        running = false;
+                        break;
+                    }
+                    char c = (char) readVal;
                     if (c == 27) {
                         char next = (char) reader.read();
                         if (next == '[') {
