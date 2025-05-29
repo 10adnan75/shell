@@ -35,6 +35,8 @@ public class CommandHandler {
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
+        this.currentDirectory = currentDirectory;
+
         if (!input.trim().isEmpty()) {
             history.add(input);
         }
@@ -47,7 +49,7 @@ public class CommandHandler {
             }
             ExtractResult extractResult = extractStreams(tokenize(input));
             Streams streams = extractResult.streams;
-            handlePipeline(parts, streams, currentDirectory);
+            handlePipeline(parts, streams, this.currentDirectory);
             return this.currentDirectory;
         }
         List<String> tokens = tokenize(input);
@@ -100,7 +102,7 @@ public class CommandHandler {
                         System.err.println("Could not open error file: " + streams.err);
                     }
                 }
-                Path result = builtin.execute(cmdArgs, input, currentDirectory);
+                Path result = builtin.execute(cmdArgs, input, this.currentDirectory);
                 if (command.equals("cd")) {
                     this.currentDirectory = result;
                     return result;
@@ -115,7 +117,7 @@ public class CommandHandler {
             }
             return this.currentDirectory;
         } else {
-            handleExternalCommand(partsList, streams, currentDirectory);
+            handleExternalCommand(partsList, streams, this.currentDirectory);
             return this.currentDirectory;
         }
     }
