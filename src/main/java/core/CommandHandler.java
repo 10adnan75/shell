@@ -250,6 +250,10 @@ public class CommandHandler {
                 List<String> tokens = Arrays.asList(parts.get(i).trim().split("\\s+"));
                 tokenizedParts.add(tokens);
                 commands[i] = this.getCommand(tokens.toArray(new String[0]), "", null, null);
+                if (commands[i] instanceof NoOpCommand) {
+                    System.err.println(tokens.get(0) + ": command not found");
+                    return currentDirectory;
+                }
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
                         commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
                         commands[i] instanceof PwdCommand);
