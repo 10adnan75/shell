@@ -36,20 +36,27 @@ public class CommandHandler {
         if (!input.trim().isEmpty()) {
             history.add(input);
         }
+
+        if (input.contains("|")) {
+            String[] pipelineSegments = input.split("\\|");
+            List<String> parts = new ArrayList<>();
+            for (String segment : pipelineSegments) {
+                parts.add(segment.trim());
+            }
+            ExtractResult extractResult = extractStreams(tokenize(input));
+            Streams streams = extractResult.streams;
+            handlePipeline(parts, streams, currentDirectory);
+            return this.currentDirectory;
+        }
         List<String> tokens = tokenize(input);
         if (tokens.isEmpty()) {
             return this.currentDirectory;
         }
-
         ExtractResult extractResult = extractStreams(tokens);
         List<String> partsList = extractResult.commands;
         Streams streams = extractResult.streams;
         if (partsList.isEmpty())
             return this.currentDirectory;
-        if (partsList.contains("|")) {
-            handlePipeline(partsList, streams, currentDirectory);
-            return this.currentDirectory;
-        }
         String command = partsList.get(0);
         List<String> arguments = partsList.subList(1, partsList.size());
         if (command.equals("exit")) {
