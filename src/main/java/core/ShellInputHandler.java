@@ -77,7 +77,7 @@ public class ShellInputHandler {
                         System.out.print('\n');
                         if (!tempString.trim().isEmpty()) {
                             history.add(tempString.trim());
-                            handler.handleCommand(tempString.trim(), currentDirectory);
+                            currentDirectory = handler.handleCommand(tempString.trim(), currentDirectory);
                         }
                         if (!isInteractive()) {
                             System.out.print("\n");
