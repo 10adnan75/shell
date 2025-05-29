@@ -33,7 +33,7 @@ public class BuiltinCompleter {
                             }
                         }
                     }
-                    if (match != null && !current.equals(match)) {
+                    if (match != null) {
                         inputBuffer.setLength(0);
                         inputBuffer.append(match).append(' ');
                     }
