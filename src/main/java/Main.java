@@ -1,25 +1,15 @@
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.IOException;
-
 import core.CommandHandler;
-import core.BuiltinCompleter;
+import core.ShellInputHandler;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         CommandHandler handler = new CommandHandler();
-        Path currentDirectory = Paths.get(System.getProperty("user.dir"));
         String[] builtins = { "echo", "exit", "pwd", "cd", "type", "history" };
-
-        while (true) {
-            String input = BuiltinCompleter.readLineWithCompletion("$ ", builtins, handler.getHistory());
-            if (input == null) {
-                break;
-            }
-            input = input.trim();
-            if (!input.isEmpty()) {
-                currentDirectory = handler.handleCommand(input, currentDirectory);
-            }
-        }
+        String pathEnv = System.getenv("PATH");
+        Path currentDirectory = Paths.get("").toAbsolutePath();
+        ShellInputHandler shell = new ShellInputHandler(handler, builtins, pathEnv);
+        shell.run(currentDirectory);
     }
 }

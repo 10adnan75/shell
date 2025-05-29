@@ -12,18 +12,22 @@ public class HistoryCommand implements Command {
 
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
-        int start = 0;
+        int limit = history.size();
+
         if (args.length > 1) {
             try {
-                int n = Integer.parseInt(args[1]);
-                start = Math.max(0, history.size() - n);
+                limit = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
-
+                System.out.println("history: numeric argument required");
+                return currentDirectory;
             }
         }
+
+        int start = Math.max(0, history.size() - limit);
         for (int i = start; i < history.size(); i++) {
-            System.out.printf("    %d  %s%n", i + 1, history.get(i));
+            System.out.printf("%5d  %s%n", i + 1, history.get(i));
         }
+        
         return currentDirectory;
     }
 }

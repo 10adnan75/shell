@@ -1,7 +1,6 @@
 package core;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,14 +11,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.io.InputStream;
 
 import builtins.*;
 
 public class CommandHandler {
     private final Map<String, Command> builtinCommands;
     private Path currentDirectory;
-    private final PrintStream originalOut;
-    private final PrintStream originalErr;
     private final List<String> history;
 
     public CommandHandler() {
@@ -32,74 +30,213 @@ public class CommandHandler {
         this.history = new ArrayList<>();
         this.builtinCommands.put("history", new HistoryCommand(history));
         this.currentDirectory = Paths.get(System.getProperty("user.dir"));
-        this.originalOut = System.out;
-        this.originalErr = System.err;
     }
 
     public Path handleCommand(String input, Path currentDirectory) {
         if (!input.trim().isEmpty()) {
             history.add(input);
         }
-        Tokenizer tokenizer = new Tokenizer();
-        TokenizerResult result = tokenizer.tokenize(input);
-
-        if (result.isPipeline) {
-            return handlePipeline(result.pipelineParts, currentDirectory);
-        }
-
-        List<String> tokens = result.tokens;
-        File redirectFile = null;
-        File stderrRedirectFile = null;
-
-        if (result.isRedirect) {
-            redirectFile = new File(result.redirectTarget);
-            File parentDir = redirectFile.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-            if (!redirectFile.exists()) {
-                try {
-                    redirectFile.createNewFile();
-                } catch (Exception e) {
-                    System.err.println("Error creating redirect file: " + e.getMessage());
-                }
-            }
-        }
-
-        if (result.isStderrRedirect) {
-            stderrRedirectFile = new File(result.stderrRedirectTarget);
-            File parentDir = stderrRedirectFile.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                try {
-                    parentDir.mkdirs();
-                } catch (Exception e) {
-                    System.err.println("Error creating stderr redirect directory: " + e.getMessage());
-                    return currentDirectory;
-                }
-            }
-            if (!stderrRedirectFile.exists()) {
-                try {
-                    stderrRedirectFile.createNewFile();
-                } catch (Exception e) {
-                    System.err.println("Error creating stderr redirect file: " + e.getMessage());
-                    return currentDirectory;
-                }
-            }
-        }
-
+        List<String> tokens = tokenize(input);
         if (tokens.isEmpty()) {
             return this.currentDirectory;
         }
 
-        String[] cmdTokensArray = tokens.toArray(new String[0]);
-        String rawCommand = input;
-
-        return executeCommandWithRedirection(cmdTokensArray, rawCommand, currentDirectory, redirectFile,
-                stderrRedirectFile, result.isAppend, result.isStderrAppend);
+        ExtractResult extractResult = extractStreams(tokens);
+        List<String> partsList = extractResult.commands;
+        Streams streams = extractResult.streams;
+        if (partsList.isEmpty())
+            return this.currentDirectory;
+        if (partsList.contains("|")) {
+            handlePipeline(partsList, streams, currentDirectory);
+            return this.currentDirectory;
+        }
+        String command = partsList.get(0);
+        List<String> arguments = partsList.subList(1, partsList.size());
+        if (command.equals("exit")) {
+            int exitCode = 0;
+            if (!arguments.isEmpty()) {
+                try {
+                    exitCode = Integer.parseInt(arguments.get(0));
+                } catch (NumberFormatException e) {
+                    exitCode = 0;
+                }
+            }
+            System.exit(exitCode);
+        }
+        if (builtinCommands.containsKey(command)) {
+            Command builtin = builtinCommands.get(command);
+            String[] cmdArgs = new String[1 + arguments.size()];
+            cmdArgs[0] = command;
+            for (int i = 0; i < arguments.size(); i++) {
+                cmdArgs[i + 1] = arguments.get(i);
+            }
+            builtin.execute(cmdArgs, input, currentDirectory);
+            return this.currentDirectory;
+        } else {
+            handleExternalCommand(partsList, streams, currentDirectory);
+            return this.currentDirectory;
+        }
     }
 
-    private Path handlePipeline(List<TokenizerResult> pipelineParts, Path currentDirectory) {
-        int n = pipelineParts.size();
+    private List<String> tokenize(String input) {
+        var result = new ArrayList<String>();
+        var currentToken = new StringBuilder();
+        Character quote = null;
+        boolean backslash = false;
+        char[] charArray = input.toCharArray();
+        for (int i = 0; i < charArray.length; i++) {
+            char c = charArray[i];
+            switch (c) {
+                case ' ' -> {
+                    if (backslash) {
+                        currentToken.append(c);
+                    } else if (quote == null) {
+                        if (!currentToken.isEmpty()) {
+                            result.add(currentToken.toString());
+                            currentToken = new StringBuilder();
+                        }
+                    } else {
+                        currentToken.append(c);
+                    }
+                }
+                case '|' -> {
+                    if (backslash) {
+                        currentToken.append(c);
+                    } else if (quote == null) {
+                        if (!currentToken.isEmpty()) {
+                            result.add(currentToken.toString());
+                            currentToken = new StringBuilder();
+                        }
+                        result.add("|");
+                    } else {
+                        currentToken.append(c);
+                    }
+                }
+                case '\'', '"' -> {
+                    if (backslash) {
+                        currentToken.append(c);
+                    } else {
+                        if (quote == null) {
+                            quote = c;
+                        } else {
+                            if (quote.equals(c)) {
+                                quote = null;
+                            } else {
+                                currentToken.append(c);
+                            }
+                        }
+                    }
+                }
+                case '\\' -> {
+                    if (backslash) {
+                        currentToken.append(c);
+                    } else {
+                        switch (quote) {
+                            case '\'' -> currentToken.append(c);
+                            case '"' -> {
+                                Character next = (i + 1 < charArray.length) ? charArray[i + 1] : null;
+                                if (next != null && (next == '$' || next == '~' || next == '"' || next == '\\'
+                                        || next == '\n')) {
+                                    backslash = true;
+                                    continue;
+                                } else {
+                                    currentToken.append(c);
+                                }
+                            }
+                            case null -> {
+                                backslash = true;
+                                continue;
+                            }
+                            default -> {
+                            }
+                        }
+                    }
+                }
+                default -> currentToken.append(c);
+            }
+            if (backslash) {
+                backslash = false;
+            }
+        }
+        if (!currentToken.isEmpty()) {
+            result.add(currentToken.toString());
+        }
+        return result;
+    }
+
+    private static class ExtractResult {
+        List<String> commands;
+        Streams streams;
+
+        ExtractResult(List<String> commands, Streams streams) {
+            this.commands = commands;
+            this.streams = streams;
+        }
+    }
+
+    private static class Streams {
+        File output;
+        File err;
+        boolean appendOutput;
+        boolean appendErr;
+
+        Streams(File output, File err, boolean appendOutput, boolean appendErr) {
+            this.output = output;
+            this.err = err;
+            this.appendOutput = appendOutput;
+            this.appendErr = appendErr;
+        }
+    }
+
+    private ExtractResult extractStreams(List<String> parts) {
+        var newCommands = new ArrayList<String>();
+        File output = null;
+        File err = null;
+        String lastRedirection = null;
+        boolean appendOutput = false;
+        boolean appendErr = false;
+        for (String command : parts) {
+            if (lastRedirection != null) {
+                switch (lastRedirection) {
+                    case ">", "1>" -> {
+                        output = new File(command);
+                        appendOutput = false;
+                        lastRedirection = null;
+                    }
+                    case "2>" -> {
+                        err = new File(command);
+                        appendErr = false;
+                        lastRedirection = null;
+                    }
+                    case ">>", "1>>" -> {
+                        output = new File(command);
+                        appendOutput = true;
+                        lastRedirection = null;
+                    }
+                    case "2>>" -> {
+                        err = new File(command);
+                        appendErr = true;
+                        lastRedirection = null;
+                    }
+                }
+            } else {
+                switch (command) {
+                    case ">", "1>", "2>", ">>", "1>>", "2>>" -> {
+                        lastRedirection = command;
+                    }
+                    default -> {
+                        newCommands.add(command);
+                    }
+                }
+            }
+        }
+        return new ExtractResult(
+                newCommands,
+                new Streams(output, err, appendOutput, appendErr));
+    }
+
+    private Path handlePipeline(List<String> parts, Streams streams, Path currentDirectory) {
+        int n = parts.size();
         if (n < 2) {
             System.err.println("Pipeline must have at least two commands.");
             return currentDirectory;
@@ -109,7 +246,7 @@ public class CommandHandler {
             boolean[] isBuiltin = new boolean[n];
             boolean allExternal = true;
             for (int i = 0; i < n; i++) {
-                String[] tokens = pipelineParts.get(i).tokens.toArray(new String[0]);
+                String[] tokens = parts.get(i).split("\\s+");
                 commands[i] = this.getCommand(tokens, "", null, null);
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
                         commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
@@ -122,9 +259,15 @@ public class CommandHandler {
             if (allExternal) {
                 java.util.List<ProcessBuilder> builders = new java.util.ArrayList<>();
                 for (int i = 0; i < n; i++) {
-                    ProcessBuilder pb = new ProcessBuilder(((ExternalCommand) commands[i]).getArgs());
-                    pb.directory(currentDirectory.toFile());
-                    builders.add(pb);
+                    if (commands[i] instanceof core.ExternalCommand extCmd) {
+                        ProcessBuilder pb = new ProcessBuilder(extCmd.getArgs());
+                        pb.directory(currentDirectory.toFile());
+                        builders.add(pb);
+                    } else {
+                        ProcessBuilder pb = new ProcessBuilder(parts.get(i).split("\\s+"));
+                        pb.directory(currentDirectory.toFile());
+                        builders.add(pb);
+                    }
                 }
                 var processes = ProcessBuilder.startPipeline(builders);
                 java.util.List<Thread> errThreads = new java.util.ArrayList<>();
@@ -180,7 +323,7 @@ public class CommandHandler {
                                 System.setOut(new PrintStream(pipeOuts[idx], true));
                             }
                             commands[idx].execute(
-                                    pipelineParts.get(idx).tokens.toArray(new String[0]),
+                                    parts.get(idx).split("\\s+"),
                                     "",
                                     currentDirectory);
                             System.out.flush();
@@ -195,47 +338,91 @@ public class CommandHandler {
                     });
                     threads[idx].start();
                 } else {
-                    ProcessBuilder pb = new ProcessBuilder(((ExternalCommand) commands[idx]).getArgs());
-                    pb.directory(currentDirectory.toFile());
-                    if (idx == 0) {
-                        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-                    } else {
-                        pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-                    }
-                    if (idx == n - 1) {
-                        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                    } else {
-                        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-                    }
-                    Process process = pb.start();
-                    processes[idx] = process;
-                    if (idx > 0) {
-                        Thread t = new Thread(() -> {
-                            try (var out = process.getOutputStream()) {
-                                pipeIns[idx - 1].transferTo(out);
-                            } catch (Exception e) {
-                            }
-                        });
-                        t.start();
-                        threads[idx] = t;
-                    }
-                    if (idx < n - 1) {
-                        Thread t = new Thread(() -> {
-                            try (var in = process.getInputStream()) {
-                                in.transferTo(pipeOuts[idx]);
-                                pipeOuts[idx].close();
-                            } catch (Exception e) {
-                            }
-                        });
-                        t.start();
-                    }
-                    Thread errThread = new Thread(() -> {
-                        try (var err = process.getErrorStream()) {
-                            err.transferTo(System.err);
-                        } catch (Exception ignored) {
+                    if (commands[idx] instanceof core.ExternalCommand extCmd) {
+                        ProcessBuilder pb = new ProcessBuilder(extCmd.getArgs());
+                        pb.directory(currentDirectory.toFile());
+                        if (idx == 0) {
+                            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectInput(ProcessBuilder.Redirect.PIPE);
                         }
-                    });
-                    errThread.start();
+                        if (idx == n - 1) {
+                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                        }
+                        Process process = pb.start();
+                        processes[idx] = process;
+                        if (idx > 0) {
+                            Thread t = new Thread(() -> {
+                                try (var out = process.getOutputStream()) {
+                                    pipeIns[idx - 1].transferTo(out);
+                                } catch (Exception e) {
+                                }
+                            });
+                            t.start();
+                            threads[idx] = t;
+                        }
+                        if (idx < n - 1) {
+                            Thread t = new Thread(() -> {
+                                try (var in = process.getInputStream()) {
+                                    in.transferTo(pipeOuts[idx]);
+                                    pipeOuts[idx].close();
+                                } catch (Exception e) {
+                                }
+                            });
+                            t.start();
+                        }
+                        Thread errThread = new Thread(() -> {
+                            try (var err = process.getErrorStream()) {
+                                err.transferTo(System.err);
+                            } catch (Exception ignored) {
+                            }
+                        });
+                        errThread.start();
+                    } else {
+                        ProcessBuilder pb = new ProcessBuilder(parts.get(idx).split("\\s+"));
+                        pb.directory(currentDirectory.toFile());
+                        if (idx == 0) {
+                            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectInput(ProcessBuilder.Redirect.PIPE);
+                        }
+                        if (idx == n - 1) {
+                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                        }
+                        Process process = pb.start();
+                        processes[idx] = process;
+                        if (idx > 0) {
+                            Thread t = new Thread(() -> {
+                                try (var out = process.getOutputStream()) {
+                                    pipeIns[idx - 1].transferTo(out);
+                                } catch (Exception e) {
+                                }
+                            });
+                            t.start();
+                            threads[idx] = t;
+                        }
+                        if (idx < n - 1) {
+                            Thread t = new Thread(() -> {
+                                try (var in = process.getInputStream()) {
+                                    in.transferTo(pipeOuts[idx]);
+                                    pipeOuts[idx].close();
+                                } catch (Exception e) {
+                                }
+                            });
+                            t.start();
+                        }
+                        Thread errThread = new Thread(() -> {
+                            try (var err = process.getErrorStream()) {
+                                err.transferTo(System.err);
+                            } catch (Exception ignored) {
+                            }
+                        });
+                        errThread.start();
+                    }
                 }
             }
 
@@ -254,84 +441,6 @@ public class CommandHandler {
                 Thread.currentThread().interrupt();
             }
             return currentDirectory;
-        }
-    }
-
-    private Path executeCommandWithRedirection(String[] cmdTokensArray, String rawCommand,
-            Path currentDirectory, File redirectFile, File stderrRedirectFile, boolean isAppend,
-            boolean isStderrAppend) {
-        Command cmd = this.getCommand(cmdTokensArray, rawCommand, redirectFile, stderrRedirectFile);
-
-        boolean isBuiltin = (cmd instanceof EchoCommand || cmd instanceof CdCommand ||
-                cmd instanceof ExitCommand || cmd instanceof TypeCommand ||
-                cmd instanceof PwdCommand);
-
-        try {
-            if (redirectFile != null && isBuiltin) {
-                FileOutputStream fos = new FileOutputStream(redirectFile, isAppend);
-                PrintStream ps = new PrintStream(fos, true) {
-                    @Override
-                    public void print(String s) {
-                        if (!s.equals("$ ")) {
-                            super.print(s);
-                        }
-                    }
-
-                    @Override
-                    public void println(String s) {
-                        if (!s.equals("$ ")) {
-                            super.println(s);
-                        }
-                    }
-                };
-                System.setOut(ps);
-            }
-
-            if (stderrRedirectFile != null) {
-                try {
-                    FileOutputStream fos = new FileOutputStream(stderrRedirectFile, isStderrAppend);
-                    PrintStream ps = new PrintStream(fos, true) {
-                        @Override
-                        public void print(String s) {
-                            if (!s.equals("$ ")) {
-                                super.print(s);
-                            }
-                        }
-
-                        @Override
-                        public void println(String s) {
-                            if (!s.equals("$ ")) {
-                                super.println(s);
-                            }
-                        }
-                    };
-                    System.setErr(ps);
-                } catch (IOException e) {
-                    System.err.println("Error setting up stderr redirection: " + e.getMessage());
-                    return currentDirectory;
-                }
-            }
-
-            Path result = cmd.execute(cmdTokensArray, rawCommand, currentDirectory);
-
-            if (redirectFile != null && isBuiltin) {
-                System.out.flush();
-            }
-            if (stderrRedirectFile != null) {
-                System.err.flush();
-            }
-
-            return result;
-        } catch (Exception e) {
-            System.err.println("Execution error: " + e.getMessage());
-            return this.currentDirectory;
-        } finally {
-            if (redirectFile != null && isBuiltin) {
-                System.setOut(originalOut);
-            }
-            if (stderrRedirectFile != null) {
-                System.setErr(originalErr);
-            }
         }
     }
 
@@ -393,5 +502,56 @@ public class CommandHandler {
 
     public List<String> getHistory() {
         return history;
+    }
+
+    private void handleExternalCommand(List<String> commands, Streams streams, Path currentDirectory) {
+        try {
+            ProcessBuilder builder = new ProcessBuilder(commands);
+            builder.directory(currentDirectory.toFile());
+            if (streams.output != null) {
+                if (streams.output.getParentFile() != null) {
+                    streams.output.getParentFile().mkdirs();
+                }
+                if (streams.appendOutput) {
+                    builder.redirectOutput(ProcessBuilder.Redirect.appendTo(streams.output));
+                } else {
+                    builder.redirectOutput(streams.output);
+                }
+            } else {
+                builder.redirectOutput(ProcessBuilder.Redirect.PIPE);
+            }
+            if (streams.err != null) {
+                if (streams.err.getParentFile() != null) {
+                    streams.err.getParentFile().mkdirs();
+                }
+                if (streams.appendErr) {
+                    builder.redirectError(ProcessBuilder.Redirect.appendTo(streams.err));
+                } else {
+                    builder.redirectError(streams.err);
+                }
+            } else {
+                builder.redirectError(ProcessBuilder.Redirect.PIPE);
+            }
+            Process process = builder.start();
+            if (streams.output == null || streams.err == null) {
+                try (InputStream in = process.getInputStream()) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) {
+                        System.out.write(buffer, 0, len);
+                    }
+                }
+                try (InputStream err = process.getErrorStream()) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+                    while ((len = err.read(buffer)) != -1) {
+                        System.err.write(buffer, 0, len);
+                    }
+                }
+            }
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            System.err.println(commands.get(0) + ": No such file or directory");
+        }
     }
 }
