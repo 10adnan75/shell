@@ -245,9 +245,11 @@ public class CommandHandler {
             Command[] commands = new Command[n];
             boolean[] isBuiltin = new boolean[n];
             boolean allExternal = true;
+            List<List<String>> tokenizedParts = new ArrayList<>();
             for (int i = 0; i < n; i++) {
-                String[] tokens = parts.get(i).split("\\s+");
-                commands[i] = this.getCommand(tokens, "", null, null);
+                List<String> tokens = Arrays.asList(parts.get(i).trim().split("\\s+"));
+                tokenizedParts.add(tokens);
+                commands[i] = this.getCommand(tokens.toArray(new String[0]), "", null, null);
                 isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
                         commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
                         commands[i] instanceof PwdCommand);
@@ -259,12 +261,12 @@ public class CommandHandler {
             if (allExternal) {
                 java.util.List<ProcessBuilder> builders = new java.util.ArrayList<>();
                 for (int i = 0; i < n; i++) {
-                    if (commands[i] instanceof core.ExternalCommand extCmd) {
-                        ProcessBuilder pb = new ProcessBuilder(extCmd.getArgs());
+                    if (commands[i] instanceof core.ExternalCommand _) {
+                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
                         pb.directory(currentDirectory.toFile());
                         builders.add(pb);
                     } else {
-                        ProcessBuilder pb = new ProcessBuilder(parts.get(i).split("\\s+"));
+                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
                         pb.directory(currentDirectory.toFile());
                         builders.add(pb);
                     }
@@ -323,7 +325,7 @@ public class CommandHandler {
                                 System.setOut(new PrintStream(pipeOuts[idx], true));
                             }
                             commands[idx].execute(
-                                    parts.get(idx).split("\\s+"),
+                                    tokenizedParts.get(idx).toArray(new String[0]),
                                     "",
                                     currentDirectory);
                             System.out.flush();
@@ -338,8 +340,8 @@ public class CommandHandler {
                     });
                     threads[idx].start();
                 } else {
-                    if (commands[idx] instanceof core.ExternalCommand extCmd) {
-                        ProcessBuilder pb = new ProcessBuilder(extCmd.getArgs());
+                    if (commands[idx] instanceof core.ExternalCommand _) {
+                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
                         pb.directory(currentDirectory.toFile());
                         if (idx == 0) {
                             pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
@@ -381,7 +383,7 @@ public class CommandHandler {
                         });
                         errThread.start();
                     } else {
-                        ProcessBuilder pb = new ProcessBuilder(parts.get(idx).split("\\s+"));
+                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
                         pb.directory(currentDirectory.toFile());
                         if (idx == 0) {
                             pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
