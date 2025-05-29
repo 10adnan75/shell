@@ -51,7 +51,7 @@ public class BuiltinCompleter {
                 }
                 if (ch >= 32 && ch <= 126) {
                     buffer.append((char) ch);
-                    System.err.print((char) ch);
+                    // System.err.print((char) ch);
                     System.err.flush();
                     int lineLen = prompt.length() + buffer.length();
                     maxLineLength = Math.max(maxLineLength, lineLen);
