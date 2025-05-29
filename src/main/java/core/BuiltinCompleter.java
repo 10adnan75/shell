@@ -28,7 +28,7 @@ public class BuiltinCompleter {
                             if (match == null) {
                                 match = builtin;
                             } else {
-                                match = null; // More than one match
+                                match = null;
                                 break;
                             }
                         }
@@ -61,11 +61,25 @@ public class BuiltinCompleter {
                 }
             }
         } catch (Exception e) {
-            // Fallback: use standard input if raw mode cannot be enabled
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String line = reader.readLine();
             if (line == null)
                 return null;
+            for (String builtin : builtins) {
+                if (builtin.startsWith(line) && !line.equals(builtin)) {
+                    int count = 0;
+                    for (String b : builtins) {
+                        if (b.startsWith(line))
+                            count++;
+                    }
+                    if (count == 1) {
+                        String completed = builtin + " ";
+                        System.out.print("\r" + prompt + completed);
+                        System.out.flush();
+                        return completed.trim();
+                    }
+                }
+            }
             return line.trim();
         }
     }
