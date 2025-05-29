@@ -103,6 +103,7 @@ public class CommandHandler {
                 Path result = builtin.execute(cmdArgs, input, currentDirectory);
                 if (command.equals("cd")) {
                     this.currentDirectory = result;
+                    return result;
                 }
             } finally {
                 if (fileOut != null)
