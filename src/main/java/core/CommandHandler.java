@@ -249,7 +249,8 @@ public class CommandHandler {
             for (int i = 0; i < n; i++) {
                 List<String> tokens = Arrays.asList(parts.get(i).trim().split("\\s+"));
                 tokenizedParts.add(tokens);
-                commands[i] = this.getCommand(tokens.toArray(new String[0]), "", null, null);
+                String[] cmdArray = tokens.toArray(new String[0]);
+                commands[i] = this.getCommand(cmdArray, "", null, null);
                 if (commands[i] instanceof NoOpCommand) {
                     System.err.println(tokens.get(0) + ": command not found");
                     return currentDirectory;
@@ -265,15 +266,9 @@ public class CommandHandler {
             if (allExternal) {
                 java.util.List<ProcessBuilder> builders = new java.util.ArrayList<>();
                 for (int i = 0; i < n; i++) {
-                    if (commands[i] instanceof core.ExternalCommand _) {
-                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
-                        pb.directory(currentDirectory.toFile());
-                        builders.add(pb);
-                    } else {
-                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
-                        pb.directory(currentDirectory.toFile());
-                        builders.add(pb);
-                    }
+                    ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
+                    pb.directory(currentDirectory.toFile());
+                    builders.add(pb);
                 }
                 var processes = ProcessBuilder.startPipeline(builders);
                 java.util.List<Thread> errThreads = new java.util.ArrayList<>();
@@ -344,91 +339,47 @@ public class CommandHandler {
                     });
                     threads[idx].start();
                 } else {
-                    if (commands[idx] instanceof core.ExternalCommand _) {
-                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
-                        pb.directory(currentDirectory.toFile());
-                        if (idx == 0) {
-                            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-                        } else {
-                            pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-                        }
-                        if (idx == n - 1) {
-                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                        } else {
-                            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-                        }
-                        Process process = pb.start();
-                        processes[idx] = process;
-                        if (idx > 0) {
-                            Thread t = new Thread(() -> {
-                                try (var out = process.getOutputStream()) {
-                                    pipeIns[idx - 1].transferTo(out);
-                                } catch (Exception e) {
-                                }
-                            });
-                            t.start();
-                            threads[idx] = t;
-                        }
-                        if (idx < n - 1) {
-                            Thread t = new Thread(() -> {
-                                try (var in = process.getInputStream()) {
-                                    in.transferTo(pipeOuts[idx]);
-                                    pipeOuts[idx].close();
-                                } catch (Exception e) {
-                                }
-                            });
-                            t.start();
-                        }
-                        Thread errThread = new Thread(() -> {
-                            try (var err = process.getErrorStream()) {
-                                err.transferTo(System.err);
-                            } catch (Exception ignored) {
-                            }
-                        });
-                        errThread.start();
+                    ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
+                    pb.directory(currentDirectory.toFile());
+                    if (idx == 0) {
+                        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
                     } else {
-                        ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
-                        pb.directory(currentDirectory.toFile());
-                        if (idx == 0) {
-                            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-                        } else {
-                            pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-                        }
-                        if (idx == n - 1) {
-                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                        } else {
-                            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-                        }
-                        Process process = pb.start();
-                        processes[idx] = process;
-                        if (idx > 0) {
-                            Thread t = new Thread(() -> {
-                                try (var out = process.getOutputStream()) {
-                                    pipeIns[idx - 1].transferTo(out);
-                                } catch (Exception e) {
-                                }
-                            });
-                            t.start();
-                            threads[idx] = t;
-                        }
-                        if (idx < n - 1) {
-                            Thread t = new Thread(() -> {
-                                try (var in = process.getInputStream()) {
-                                    in.transferTo(pipeOuts[idx]);
-                                    pipeOuts[idx].close();
-                                } catch (Exception e) {
-                                }
-                            });
-                            t.start();
-                        }
-                        Thread errThread = new Thread(() -> {
-                            try (var err = process.getErrorStream()) {
-                                err.transferTo(System.err);
-                            } catch (Exception ignored) {
+                        pb.redirectInput(ProcessBuilder.Redirect.PIPE);
+                    }
+                    if (idx == n - 1) {
+                        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                    } else {
+                        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                    }
+                    Process process = pb.start();
+                    processes[idx] = process;
+                    if (idx > 0) {
+                        Thread t = new Thread(() -> {
+                            try (var out = process.getOutputStream()) {
+                                pipeIns[idx - 1].transferTo(out);
+                            } catch (Exception e) {
                             }
                         });
-                        errThread.start();
+                        t.start();
+                        threads[idx] = t;
                     }
+                    if (idx < n - 1) {
+                        Thread t = new Thread(() -> {
+                            try (var in = process.getInputStream()) {
+                                in.transferTo(pipeOuts[idx]);
+                                pipeOuts[idx].close();
+                            } catch (Exception e) {
+                            }
+                        });
+                        t.start();
+                    }
+                    Thread errThread = new Thread(() -> {
+                        try (var err = process.getErrorStream()) {
+                            err.transferTo(System.err);
+                        } catch (Exception ignored) {
+                        }
+                    });
+                    errThread.start();
                 }
             }
 
