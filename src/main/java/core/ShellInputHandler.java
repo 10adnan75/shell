@@ -76,6 +76,9 @@ public class ShellInputHandler {
                             history.add(tempString.trim());
                             handler.handleCommand(tempString.trim(), currentDirectory);
                         }
+                        if (!isInteractive()) {
+                            System.out.print("\n");
+                        }
                         break;
                     } else if (c == '\t') {
                         tempString = tabCompleter.complete(tempString);
