@@ -32,16 +32,15 @@ public class BuiltinCompleter {
                     if (matches.size() == 1) {
                         String match = matches.get(0);
                         if (!current.equals(match) && match.startsWith(current)) {
-                            System.out.print("\033[2K\r");
-                            System.out.flush();
                             String completion = match + " ";
                             inputBuffer.setLength(0);
                             inputBuffer.append(completion);
-                            System.out.print(prompt + completion);
-                            System.out.flush();
-                            maxLineLength = Math.max(maxLineLength, prompt.length() + completion.length());
                         }
                     }
+                    clearLine(maxLineLength);
+                    System.out.print(prompt + inputBuffer.toString());
+                    System.out.flush();
+                    maxLineLength = Math.max(maxLineLength, prompt.length() + inputBuffer.length());
                     continue;
                 }
                 if (ch == 127 || ch == 8) {
