@@ -248,14 +248,14 @@ public class CommandHandler {
         int n = parts.size();
         if (n < 2) {
             System.err.println("Pipeline must have at least two commands.");
-            System.out.flush();
-            System.err.flush();
             return currentDirectory;
         }
+
         try {
             List<List<String>> tokenizedParts = new ArrayList<>();
             for (String part : parts) {
-                tokenizedParts.add(Arrays.asList(part.trim().split("\\s+")));
+                List<String> tokens = Arrays.asList(part.trim().split("\\s+"));
+                tokenizedParts.add(tokens);
             }
 
             boolean allExternal = true;
@@ -273,29 +273,38 @@ public class CommandHandler {
                     pb.directory(currentDirectory.toFile());
                     builders.add(pb);
                 }
-                List<Process> processes = ProcessBuilder.startPipeline(builders);
-                List<Thread> errThreads = new ArrayList<>();
-                for (Process p : processes) {
-                    Thread t = new Thread(() -> {
-                        try (var err = p.getErrorStream()) {
-                            err.transferTo(System.err);
-                        } catch (Exception ignored) {
-                        }
-                    });
-                    t.start();
-                    errThreads.add(t);
+
+                try {
+                    List<Process> processes = ProcessBuilder.startPipeline(builders);
+
+                    List<Thread> errThreads = new ArrayList<>();
+                    for (Process p : processes) {
+                        Thread t = new Thread(() -> {
+                            try (var err = p.getErrorStream()) {
+                                err.transferTo(System.err);
+                            } catch (Exception ignored) {
+                            }
+                        });
+                        t.start();
+                        errThreads.add(t);
+                    }
+
+                    try (var out = processes.get(processes.size() - 1).getInputStream()) {
+                        out.transferTo(System.out);
+                    }
+
+                    for (Process p : processes) {
+                        p.waitFor();
+                    }
+
+                    for (Thread t : errThreads) {
+                        t.join();
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Error executing pipeline: " + e.getMessage());
                 }
-                try (var out = processes.get(processes.size() - 1).getInputStream()) {
-                    out.transferTo(System.out);
-                }
-                for (Process p : processes) {
-                    p.waitFor();
-                }
-                for (Thread t : errThreads) {
-                    t.join();
-                }
-                System.out.flush();
-                System.err.flush();
+
                 return currentDirectory;
             }
 
@@ -305,6 +314,7 @@ public class CommandHandler {
                 pipeOuts[i] = new java.io.PipedOutputStream();
                 pipeIns[i] = new java.io.PipedInputStream(pipeOuts[i]);
             }
+
             Process[] processes = new Process[n];
             Thread[] threads = new Thread[n];
             PrintStream originalOut = System.out;
@@ -314,6 +324,7 @@ public class CommandHandler {
                 final int idx = i;
                 List<String> tokens = tokenizedParts.get(idx);
                 boolean isBuiltin = !tokens.isEmpty() && Arrays.asList(SHELL_COMMANDS).contains(tokens.get(0));
+
                 if (isBuiltin) {
                     threads[idx] = new Thread(() -> {
                         PrintStream prevOut = System.out;
@@ -345,6 +356,7 @@ public class CommandHandler {
                 } else {
                     ProcessBuilder pb = new ProcessBuilder(tokens);
                     pb.directory(currentDirectory.toFile());
+
                     if (idx == 0) {
                         pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
                     } else {
@@ -355,9 +367,11 @@ public class CommandHandler {
                     } else {
                         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
                     }
+
                     Process process = pb.start();
                     processes[idx] = process;
-                    if (idx > 0) {
+
+                    if (idx > 0 && pipeIns[idx - 1] != null) {
                         Thread t = new Thread(() -> {
                             try (var out = process.getOutputStream()) {
                                 pipeIns[idx - 1].transferTo(out);
@@ -365,8 +379,8 @@ public class CommandHandler {
                             }
                         });
                         t.start();
-                        threads[idx] = t;
                     }
+
                     if (idx < n - 1) {
                         Thread t = new Thread(() -> {
                             try (var in = process.getInputStream()) {
@@ -377,6 +391,7 @@ public class CommandHandler {
                         });
                         t.start();
                     }
+
                     Thread errThread = new Thread(() -> {
                         try (var err = process.getErrorStream()) {
                             err.transferTo(System.err);
@@ -386,6 +401,7 @@ public class CommandHandler {
                     errThread.start();
                 }
             }
+
             for (int i = 0; i < n; i++) {
                 if (threads[i] != null) {
                     threads[i].join();
@@ -394,18 +410,15 @@ public class CommandHandler {
                     processes[i].waitFor();
                 }
             }
-            System.out.flush();
-            System.err.flush();
-            return currentDirectory;
+
         } catch (IOException | InterruptedException e) {
             System.err.println("Error executing pipeline: " + e.getMessage());
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            System.out.flush();
-            System.err.flush();
-            return currentDirectory;
         }
+
+        return currentDirectory;
     }
 
     public Command getCommand(String[] tokens, String rawInput, File redirectFile, File stderrRedirectFile) {
