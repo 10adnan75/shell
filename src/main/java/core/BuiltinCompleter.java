@@ -60,24 +60,10 @@ public class BuiltinCompleter {
         } catch (Exception e) {
             System.err.flush();
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-            while (true) {
-                String line = reader.readLine();
-                if (line == null)
-                    return null;
-                if (line.equals("\u001b[A") && history.size() > 0) {
-                    // Print prompt and recalled command, then read again
-                    String recalled = history.get(history.size() - 1);
-                    System.err.print(prompt + recalled);
-                    System.err.flush();
-                    String next = reader.readLine();
-                    if (next == null)
-                        return null;
-                    if (next.isEmpty())
-                        return recalled;
-                    return next.trim();
-                }
-                return line.trim();
-            }
+            String line = reader.readLine();
+            if (line == null)
+                return null;
+            return line.trim();
         }
     }
 
