@@ -6,7 +6,13 @@ import java.util.List;
 
 public class BuiltinCompleter {
     public static String readLineWithCompletion(String prompt, String[] builtins) throws java.io.IOException {
-        Terminal terminal = TerminalBuilder.builder().system(true).build();
+        System.setProperty("org.jline.utils.Log.level", "OFF");
+        Terminal terminal;
+        try {
+            terminal = TerminalBuilder.builder().system(true).build();
+        } catch (Exception e) {
+            terminal = TerminalBuilder.builder().dumb(true).build();
+        }
         Completer completer = new Completer() {
             @Override
             public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
