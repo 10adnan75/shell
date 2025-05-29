@@ -28,7 +28,7 @@ public class BuiltinCompleter {
                             if (match == null) {
                                 match = builtin;
                             } else {
-                                match = null;
+                                match = null; // More than one match
                                 break;
                             }
                         }
@@ -61,6 +61,7 @@ public class BuiltinCompleter {
                 }
             }
         } catch (Exception e) {
+            // Fallback: use standard input if raw mode cannot be enabled
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String line = reader.readLine();
             if (line == null)
