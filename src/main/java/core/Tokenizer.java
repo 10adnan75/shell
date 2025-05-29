@@ -1,3 +1,10 @@
+/**
+ * Tokenizer.java
+ *
+ * Tokenizes shell input, handling quotes, escapes, and pipeline splitting.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.util.ArrayList;

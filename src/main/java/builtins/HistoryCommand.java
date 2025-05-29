@@ -1,3 +1,10 @@
+/**
+ * HistoryCommand.java
+ *
+ * Implements the 'history' builtin command, which prints the command history.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

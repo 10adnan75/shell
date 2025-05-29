@@ -1,3 +1,10 @@
+/**
+ * TokenizerResult.java
+ *
+ * Holds the result of tokenizing a shell input string, including tokens and pipeline parts.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.util.List;

@@ -1,3 +1,10 @@
+/**
+ * TypeCommand.java
+ *
+ * Implements the 'type' builtin command, which tells whether a command is builtin or external.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.io.File;

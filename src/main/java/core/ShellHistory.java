@@ -1,3 +1,10 @@
+/**
+ * ShellHistory.java
+ *
+ * Manages the command history buffer and navigation (up/down arrows).
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.util.ArrayList;

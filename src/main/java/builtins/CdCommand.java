@@ -1,3 +1,10 @@
+/**
+ * CdCommand.java
+ *
+ * Implements the 'cd' (change directory) builtin command.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

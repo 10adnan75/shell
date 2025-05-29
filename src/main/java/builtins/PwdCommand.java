@@ -1,3 +1,10 @@
+/**
+ * PwdCommand.java
+ *
+ * Implements the 'pwd' (print working directory) builtin command.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

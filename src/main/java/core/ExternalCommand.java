@@ -1,3 +1,11 @@
+/**
+ * ExternalCommand.java
+ *
+ * Represents and executes external (non-builtin) commands using ProcessBuilder.
+ * Handles output and error redirection.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.io.*;

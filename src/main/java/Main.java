@@ -1,3 +1,10 @@
+/**
+ * Main.java
+ *
+ * Entry point for the Java Shell application. Initializes core components and starts the shell loop.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import core.CommandHandler;

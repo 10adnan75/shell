@@ -1,3 +1,10 @@
+/**
+ * EchoCommand.java
+ *
+ * Implements the 'echo' builtin command.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

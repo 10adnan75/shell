@@ -1,3 +1,10 @@
+/**
+ * NoOpCommand.java
+ *
+ * Represents a no-operation command (used for error handling or unknown commands).
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

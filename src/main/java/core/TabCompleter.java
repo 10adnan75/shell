@@ -1,3 +1,10 @@
+/**
+ * TabCompleter.java
+ *
+ * Provides tab completion for built-in and external commands.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.io.File;

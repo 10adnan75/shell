@@ -1,3 +1,10 @@
+/**
+ * ExitCommand.java
+ *
+ * Implements the 'exit' builtin command.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package builtins;
 
 import java.nio.file.Path;

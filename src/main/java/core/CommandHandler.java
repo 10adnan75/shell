@@ -1,3 +1,11 @@
+/**
+ * CommandHandler.java
+ *
+ * Handles parsing and execution of shell commands, including builtins, external commands, pipelines, and redirection.
+ * Maintains the current working directory and command history.
+ *
+ * Author: Adnan Mazharuddin Shaikh
+ */
 package core;
 
 import java.io.File;
