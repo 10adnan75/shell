@@ -12,7 +12,8 @@ public class TypeCommand implements Command {
         }
 
         String cmd = args[1];
-        if (cmd.equals("echo") || cmd.equals("type") || cmd.equals("exit") || cmd.equals("pwd") || cmd.equals("cd")) {
+        if (cmd.equals("echo") || cmd.equals("type") || cmd.equals("exit") || cmd.equals("pwd") || cmd.equals("cd")
+                || cmd.equals("history")) {
             System.out.println(cmd + " is a shell builtin");
         } else {
             boolean found = false;
