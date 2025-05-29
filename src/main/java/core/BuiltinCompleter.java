@@ -30,11 +30,10 @@ public class BuiltinCompleter {
                     String current = inputBuffer.toString();
                     List<String> matches = trie.getCompletions(current);
                     if (matches.size() == 1) {
-                        String match = matches.get(0);
-                        if (!current.equals(match) && match.startsWith(current)) {
-                            String completion = match + " ";
+                        String matchWithSpace = matches.get(0) + " ";
+                        if (!current.equals(matchWithSpace)) {
                             inputBuffer.setLength(0);
-                            inputBuffer.append(completion);
+                            inputBuffer.append(matchWithSpace);
                         }
                     }
                     clearLine(maxLineLength);
