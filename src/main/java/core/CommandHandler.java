@@ -20,6 +20,8 @@ public class CommandHandler {
     private Path currentDirectory;
     private final List<String> history;
 
+    private static final String[] SHELL_COMMANDS = { "echo", "cd", "exit", "type", "pwd", "history" };
+
     public CommandHandler() {
         this.builtinCommands = new HashMap<>();
         this.builtinCommands.put("echo", new EchoCommand());
@@ -251,38 +253,30 @@ public class CommandHandler {
             return currentDirectory;
         }
         try {
-            Command[] commands = new Command[n];
-            boolean[] isBuiltin = new boolean[n];
-            boolean allExternal = true;
+            // Tokenize each part
             List<List<String>> tokenizedParts = new ArrayList<>();
-            for (int i = 0; i < n; i++) {
-                List<String> tokens = Arrays.asList(parts.get(i).trim().split("\\s+"));
-                tokenizedParts.add(tokens);
-                String[] cmdArray = tokens.toArray(new String[0]);
-                commands[i] = this.getCommand(cmdArray, "", null, null);
-                if (commands[i] instanceof NoOpCommand) {
-                    System.err.println(tokens.get(0) + ": command not found");
-                    System.out.flush();
-                    System.err.flush();
-                    return currentDirectory;
-                }
-                isBuiltin[i] = (commands[i] instanceof EchoCommand || commands[i] instanceof CdCommand ||
-                        commands[i] instanceof ExitCommand || commands[i] instanceof TypeCommand ||
-                        commands[i] instanceof PwdCommand);
-                if (isBuiltin[i]) {
+            for (String part : parts) {
+                tokenizedParts.add(Arrays.asList(part.trim().split("\\s+")));
+            }
+
+            // Check if all commands are external
+            boolean allExternal = true;
+            for (List<String> tokens : tokenizedParts) {
+                if (tokens.isEmpty() || Arrays.asList(SHELL_COMMANDS).contains(tokens.get(0))) {
                     allExternal = false;
+                    break;
                 }
             }
 
             if (allExternal) {
-                java.util.List<ProcessBuilder> builders = new java.util.ArrayList<>();
-                for (int i = 0; i < n; i++) {
-                    ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(i));
+                List<ProcessBuilder> builders = new ArrayList<>();
+                for (List<String> tokens : tokenizedParts) {
+                    ProcessBuilder pb = new ProcessBuilder(tokens);
                     pb.directory(currentDirectory.toFile());
                     builders.add(pb);
                 }
-                var processes = ProcessBuilder.startPipeline(builders);
-                java.util.List<Thread> errThreads = new java.util.ArrayList<>();
+                List<Process> processes = ProcessBuilder.startPipeline(builders);
+                List<Thread> errThreads = new ArrayList<>();
                 for (Process p : processes) {
                     Thread t = new Thread(() -> {
                         try (var err = p.getErrorStream()) {
@@ -307,21 +301,23 @@ public class CommandHandler {
                 return currentDirectory;
             }
 
+            // Mixed pipeline: set up pipes
             java.io.PipedInputStream[] pipeIns = new java.io.PipedInputStream[n - 1];
             java.io.PipedOutputStream[] pipeOuts = new java.io.PipedOutputStream[n - 1];
             for (int i = 0; i < n - 1; i++) {
                 pipeOuts[i] = new java.io.PipedOutputStream();
                 pipeIns[i] = new java.io.PipedInputStream(pipeOuts[i]);
             }
-
+            Process[] processes = new Process[n];
+            Thread[] threads = new Thread[n];
             PrintStream originalOut = System.out;
             java.io.InputStream originalIn = System.in;
-            Thread[] threads = new Thread[n];
-            Process[] processes = new Process[n];
 
             for (int i = 0; i < n; i++) {
                 final int idx = i;
-                if (isBuiltin[idx]) {
+                List<String> tokens = tokenizedParts.get(idx);
+                boolean isBuiltin = !tokens.isEmpty() && Arrays.asList(SHELL_COMMANDS).contains(tokens.get(0));
+                if (isBuiltin) {
                     threads[idx] = new Thread(() -> {
                         PrintStream prevOut = System.out;
                         java.io.InputStream prevIn = System.in;
@@ -336,10 +332,8 @@ public class CommandHandler {
                             } else {
                                 System.setOut(new PrintStream(pipeOuts[idx], true));
                             }
-                            commands[idx].execute(
-                                    tokenizedParts.get(idx).toArray(new String[0]),
-                                    "",
-                                    currentDirectory);
+                            Command cmd = this.getCommand(tokens.toArray(new String[0]), "", null, null);
+                            cmd.execute(tokens.toArray(new String[0]), "", currentDirectory);
                             System.out.flush();
                             if (idx < n - 1) {
                                 pipeOuts[idx].close();
@@ -352,7 +346,7 @@ public class CommandHandler {
                     });
                     threads[idx].start();
                 } else {
-                    ProcessBuilder pb = new ProcessBuilder(tokenizedParts.get(idx));
+                    ProcessBuilder pb = new ProcessBuilder(tokens);
                     pb.directory(currentDirectory.toFile());
                     if (idx == 0) {
                         pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
@@ -395,7 +389,6 @@ public class CommandHandler {
                     errThread.start();
                 }
             }
-
             for (int i = 0; i < n; i++) {
                 if (threads[i] != null) {
                     threads[i].join();
