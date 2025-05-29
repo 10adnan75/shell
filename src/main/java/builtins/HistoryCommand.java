@@ -12,8 +12,17 @@ public class HistoryCommand implements Command {
 
     @Override
     public Path execute(String[] args, String rawInput, Path currentDirectory) {
-        for (int i = 0; i < history.size(); i++) {
-            System.out.printf("%d  %s%n", i + 1, history.get(i));
+        int start = 0;
+        if (args.length > 1) {
+            try {
+                int n = Integer.parseInt(args[1]);
+                start = Math.max(0, history.size() - n);
+            } catch (NumberFormatException e) {
+
+            }
+        }
+        for (int i = start; i < history.size(); i++) {
+            System.out.printf("    %d  %s%n", i + 1, history.get(i));
         }
         return currentDirectory;
     }
