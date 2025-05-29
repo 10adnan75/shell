@@ -58,37 +58,11 @@ public class BuiltinCompleter {
                 }
             }
         } catch (Exception e) {
-            System.err.flush();
-            StringBuilder fallbackBuffer = new StringBuilder();
-            int c;
-            while ((c = System.in.read()) != -1) {
-                if (c == '\n' || c == '\r') {
-                    System.err.println();
-                    break;
-                }
-                if (c == 27) {
-                    int next1 = System.in.read();
-                    int next2 = System.in.read();
-                    if (next1 == 91 && next2 == 65) {
-                        if (historyIndex > 0) {
-                            historyIndex--;
-                            fallbackBuffer.setLength(0);
-                            fallbackBuffer.append(history.get(historyIndex));
-                            clearLine(prompt.length());
-                            System.err.print(prompt + fallbackBuffer.toString());
-                            System.err.flush();
-                        }
-                        continue;
-                    }
-                } else {
-                    fallbackBuffer.append((char) c);
-                    System.err.print((char) c);
-                    System.err.flush();
-                }
-            }
-            if (c == -1 && fallbackBuffer.length() == 0)
-                return null;
-            return fallbackBuffer.toString().trim();
+            // Fallback: just read the line, no up-arrow/history recall
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+            String line = reader.readLine();
+            if (line == null) return null;
+            return line.trim();
         }
     }
 
