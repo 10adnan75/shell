@@ -18,7 +18,7 @@ public class BuiltinCompleter {
                     return null;
                 }
                 if (ch == '\n' || ch == '\r') {
-                    System.err.println();
+                    // System.err.println();
                     return buffer.toString().trim();
                 }
                 if (ch == 27) {
