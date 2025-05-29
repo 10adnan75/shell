@@ -551,7 +551,7 @@ public class CommandHandler {
             }
             process.waitFor();
         } catch (IOException | InterruptedException e) {
-            System.err.println(commands.get(0) + ": No such file or directory");
+            System.err.println(commands.get(0) + ": command not found");
         }
     }
 }
