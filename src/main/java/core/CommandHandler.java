@@ -79,7 +79,36 @@ public class CommandHandler {
             for (int i = 0; i < arguments.size(); i++) {
                 cmdArgs[i + 1] = arguments.get(i);
             }
-            builtin.execute(cmdArgs, input, currentDirectory);
+            PrintStream originalOut = System.out;
+            PrintStream fileOut = null;
+            PrintStream originalErr = System.err;
+            PrintStream fileErr = null;
+            try {
+                if (streams.output != null) {
+                    try {
+                        fileOut = new PrintStream(new java.io.FileOutputStream(streams.output, streams.appendOutput));
+                        System.setOut(fileOut);
+                    } catch (java.io.FileNotFoundException e) {
+                        System.err.println("Could not open output file: " + streams.output);
+                    }
+                }
+                if (streams.err != null) {
+                    try {
+                        fileErr = new PrintStream(new java.io.FileOutputStream(streams.err, streams.appendErr));
+                        System.setErr(fileErr);
+                    } catch (java.io.FileNotFoundException e) {
+                        System.err.println("Could not open error file: " + streams.err);
+                    }
+                }
+                builtin.execute(cmdArgs, input, currentDirectory);
+            } finally {
+                if (fileOut != null)
+                    fileOut.close();
+                if (fileErr != null)
+                    fileErr.close();
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
             return this.currentDirectory;
         } else {
             handleExternalCommand(partsList, streams, currentDirectory);
