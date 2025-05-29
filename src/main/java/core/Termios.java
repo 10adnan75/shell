@@ -22,34 +22,36 @@ public class Termios implements AutoCloseable {
         boolean rawModeEnabled = false;
         try {
             fd = C.open("/dev/tty", O_RDWR);
+
             if (fd < 0)
                 throw new Exception("open /dev/tty failed");
+
             this.ttyFd = fd;
+
             if (LibC.INSTANCE.tcgetattr(ttyFd, previous) == -1)
                 throw new Exception("tcgetattr failed");
+
             LibC.struct_termios termios = previous.clone();
             long lflag = termios.c_lflag.longValue();
-            lflag &= ~LibC.ICANON;
-            lflag |= LibC.ECHO;
+            lflag |= LibC.ICANON;
             termios.c_lflag.setValue(lflag);
             termios.c_cc[LibC.VMIN] = 1;
             termios.c_cc[LibC.VTIME] = 0;
+
             int res1 = LibC.INSTANCE.tcsetattr(ttyFd, LibC.TCSANOW, termios);
+
             if (res1 == -1) {
                 System.err.println("tcsetattr(ttyFd) failed: " + LibC.INSTANCE.strerror(Native.getLastError()));
                 throw new Exception("tcsetattr(ttyFd) failed");
             }
+
             int res2 = LibC.INSTANCE.tcsetattr(LibC.STDIN_FILENO, LibC.TCSANOW, termios);
+
             if (res2 == -1) {
                 System.err.println("tcsetattr(STDIN_FILENO) failed: " + LibC.INSTANCE.strerror(Native.getLastError()));
                 throw new Exception("tcsetattr(STDIN_FILENO) failed");
             }
-            // long lflagCheck = termios.c_lflag.longValue();
-            // if ((lflagCheck & LibC.ECHO) == 0) {
-            // System.err.println("DEBUG: ECHO is disabled");
-            // } else {
-            // System.err.println("DEBUG: ECHO is still enabled");
-            // }
+
             rawModeEnabled = true;
         } catch (Exception e) {
             System.err.println("WARNING: Raw mode not enabled (not a tty): " + e.getMessage());
