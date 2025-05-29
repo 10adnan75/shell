@@ -1,14 +1,28 @@
 package core;
 
-import java.io.IOException;
+import org.jline.reader.*;
+import org.jline.terminal.*;
 import java.util.List;
 
 public class BuiltinCompleter {
     public static String readLineWithCompletion(String prompt, String[] builtins) throws java.io.IOException {
-        System.out.print(prompt);
-        System.out.flush();
-        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-        String line = reader.readLine();
+        Terminal terminal = TerminalBuilder.builder().system(true).build();
+        Completer completer = new Completer() {
+            @Override
+            public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+                String word = line.word();
+                for (String builtin : builtins) {
+                    if (builtin.startsWith(word)) {
+                        candidates.add(new Candidate(builtin + " "));
+                    }
+                }
+            }
+        };
+        LineReader reader = LineReaderBuilder.builder()
+                .terminal(terminal)
+                .completer(completer)
+                .build();
+        String line = reader.readLine(prompt);
         if (line == null)
             return null;
         return line.trim();
