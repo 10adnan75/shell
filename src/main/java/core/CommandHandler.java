@@ -390,4 +390,8 @@ public class CommandHandler {
         }
         return null;
     }
+
+    public List<String> getHistory() {
+        return history;
+    }
 }
