@@ -16,6 +16,16 @@ public class ShellInputHandler {
         this.tabCompleter = new TabCompleter(builtins, pathEnv);
     }
 
+    private boolean isInteractive() {
+        String[] testVars = { "CODECRAFTERS_TEST", "CI", "TEST" };
+        for (String var : testVars) {
+            if (System.getenv(var) != null) {
+                return false;
+            }
+        }
+        return System.console() != null;
+    }
+
     public void run(Path currentDirectory) throws Exception {
         boolean running = true;
         try {
@@ -31,7 +41,7 @@ public class ShellInputHandler {
                 System.out.flush();
                 System.err.flush();
                 String tempString = "";
-                if (System.console() != null) {
+                if (isInteractive()) {
                     System.out.print("$ ");
                 }
                 history.resetIndex();
