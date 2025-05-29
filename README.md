@@ -24,8 +24,8 @@
 
 1. **Clone the repository:**
    ```sh
-   git clone <your-repo-url>
-   cd <your-repo-directory>
+   git clone https://github.com/10adnan75/shell.git
+   cd shell
    ```
 
 2. **Build the project:**
