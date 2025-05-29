@@ -61,11 +61,21 @@ public class BuiltinCompleter {
                 }
             }
         } catch (Exception e) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String line = reader.readLine();
-            if (line == null)
+            System.out.flush();
+            StringBuilder fallbackBuffer = new StringBuilder();
+            int c;
+            while ((c = System.in.read()) != -1) {
+                if (c == '\n' || c == '\r') {
+                    System.out.println();
+                    break;
+                }
+                fallbackBuffer.append((char) c);
+                System.out.print((char) c);
+                System.out.flush();
+            }
+            if (c == -1 && fallbackBuffer.length() == 0)
                 return null;
-            return line.trim();
+            return fallbackBuffer.toString().trim();
         }
     }
 
