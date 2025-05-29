@@ -33,10 +33,22 @@ public class Termios implements AutoCloseable {
             termios.c_lflag.setValue(lflag);
             termios.c_cc[LibC.VMIN] = 1;
             termios.c_cc[LibC.VTIME] = 0;
-            if (LibC.INSTANCE.tcsetattr(ttyFd, LibC.TCSANOW, termios) == -1)
+            int res1 = LibC.INSTANCE.tcsetattr(ttyFd, LibC.TCSANOW, termios);
+            if (res1 == -1) {
+                System.err.println("tcsetattr(ttyFd) failed: " + LibC.INSTANCE.strerror(Native.getLastError()));
                 throw new Exception("tcsetattr(ttyFd) failed");
-            if (LibC.INSTANCE.tcsetattr(LibC.STDIN_FILENO, LibC.TCSANOW, termios) == -1)
+            }
+            int res2 = LibC.INSTANCE.tcsetattr(LibC.STDIN_FILENO, LibC.TCSANOW, termios);
+            if (res2 == -1) {
+                System.err.println("tcsetattr(STDIN_FILENO) failed: " + LibC.INSTANCE.strerror(Native.getLastError()));
                 throw new Exception("tcsetattr(STDIN_FILENO) failed");
+            }
+            // long lflagCheck = termios.c_lflag.longValue();
+            // if ((lflagCheck & LibC.ECHO) == 0) {
+            //     System.err.println("DEBUG: ECHO is disabled");
+            // } else {
+            //     System.err.println("DEBUG: ECHO is still enabled");
+            // }
             rawModeEnabled = true;
         } catch (Exception e) {
             System.err.println("WARNING: Raw mode not enabled (not a tty): " + e.getMessage());
@@ -49,10 +61,12 @@ public class Termios implements AutoCloseable {
     public void close() {
         if (rawModeEnabled && ttyFd >= 0) {
             if (LibC.INSTANCE.tcsetattr(ttyFd, LibC.TCSANOW, previous) == -1) {
-                System.err.println("WARNING: Failed to restore ttyFd termios");
+                System.err.println(
+                        "WARNING: Failed to restore ttyFd termios: " + LibC.INSTANCE.strerror(Native.getLastError()));
             }
             if (LibC.INSTANCE.tcsetattr(LibC.STDIN_FILENO, LibC.TCSANOW, previous) == -1) {
-                System.err.println("WARNING: Failed to restore STDIN_FILENO termios");
+                System.err.println("WARNING: Failed to restore STDIN_FILENO termios: "
+                        + LibC.INSTANCE.strerror(Native.getLastError()));
             }
             C.close(ttyFd);
         }
