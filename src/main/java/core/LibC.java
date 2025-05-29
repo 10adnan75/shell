@@ -26,32 +26,29 @@ public interface LibC extends Library {
             "c_oflag",
             "c_cflag",
             "c_lflag",
-            "c_line",
             "c_cc",
             "c_ispeed",
             "c_ospeed",
     })
     class struct_termios extends Structure implements Cloneable {
-        public int c_iflag;
-        public int c_oflag;
-        public int c_cflag;
-        public int c_lflag;
-        public byte c_line;
+        public com.sun.jna.NativeLong c_iflag;
+        public com.sun.jna.NativeLong c_oflag;
+        public com.sun.jna.NativeLong c_cflag;
+        public com.sun.jna.NativeLong c_lflag;
         public byte[] c_cc = new byte[NCCS];
-        public int c_ispeed;
-        public int c_ospeed;
+        public com.sun.jna.NativeLong c_ispeed;
+        public com.sun.jna.NativeLong c_ospeed;
 
         @Override
         protected struct_termios clone() {
             struct_termios copy = new struct_termios();
-            copy.c_iflag = c_iflag;
-            copy.c_oflag = c_oflag;
-            copy.c_cflag = c_cflag;
-            copy.c_lflag = c_lflag;
-            copy.c_line = c_line;
+            copy.c_iflag = new com.sun.jna.NativeLong(c_iflag.longValue());
+            copy.c_oflag = new com.sun.jna.NativeLong(c_oflag.longValue());
+            copy.c_cflag = new com.sun.jna.NativeLong(c_cflag.longValue());
+            copy.c_lflag = new com.sun.jna.NativeLong(c_lflag.longValue());
             copy.c_cc = c_cc.clone();
-            copy.c_ispeed = c_ispeed;
-            copy.c_ospeed = c_ospeed;
+            copy.c_ispeed = new com.sun.jna.NativeLong(c_ispeed.longValue());
+            copy.c_ospeed = new com.sun.jna.NativeLong(c_ospeed.longValue());
             return copy;
         }
     }
