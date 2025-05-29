@@ -7,7 +7,7 @@ public class BuiltinCompleter {
     public static String readLineWithCompletion(String prompt, String[] builtins) throws java.io.IOException {
         System.out.print(prompt);
         System.out.flush();
-        StringBuilder inputBuffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
         int maxLineLength = prompt.length();
         try (Termios _ = Termios.enableRawMode()) {
             while (true) {
@@ -18,10 +18,19 @@ public class BuiltinCompleter {
                 }
                 if (ch == '\n' || ch == '\r') {
                     System.out.println();
-                    return inputBuffer.toString().trim();
+                    return buffer.toString().trim();
+                }
+                if (ch == 127 || ch == 8) {
+                    if (buffer.length() > 0) {
+                        buffer.setLength(buffer.length() - 1);
+                        clearLine(maxLineLength);
+                        System.out.print(prompt + buffer.toString());
+                        System.out.flush();
+                    }
+                    continue;
                 }
                 if (ch == '\t') {
-                    String current = inputBuffer.toString();
+                    String current = buffer.toString();
                     String match = null;
                     for (String builtin : builtins) {
                         if (builtin.startsWith(current)) {
@@ -34,29 +43,20 @@ public class BuiltinCompleter {
                         }
                     }
                     if (match != null) {
-                        inputBuffer.setLength(0);
-                        inputBuffer.append(match).append(' ');
+                        buffer.setLength(0);
+                        buffer.append(match).append(' ');
                     }
                     clearLine(maxLineLength);
-                    System.out.print(prompt + inputBuffer.toString());
+                    System.out.print(prompt + buffer.toString());
                     System.out.flush();
-                    maxLineLength = Math.max(maxLineLength, prompt.length() + inputBuffer.length());
-                    continue;
-                }
-                if (ch == 127 || ch == 8) {
-                    if (inputBuffer.length() > 0) {
-                        inputBuffer.setLength(inputBuffer.length() - 1);
-                        clearLine(maxLineLength);
-                        System.out.print(prompt + inputBuffer.toString());
-                        System.out.flush();
-                    }
+                    maxLineLength = Math.max(maxLineLength, prompt.length() + buffer.length());
                     continue;
                 }
                 if (ch >= 32 && ch <= 126) {
-                    inputBuffer.append((char) ch);
+                    buffer.append((char) ch);
                     System.out.print((char) ch);
                     System.out.flush();
-                    int lineLen = prompt.length() + inputBuffer.length();
+                    int lineLen = prompt.length() + buffer.length();
                     maxLineLength = Math.max(maxLineLength, lineLen);
                 }
             }
