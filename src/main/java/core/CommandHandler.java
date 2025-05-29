@@ -100,7 +100,10 @@ public class CommandHandler {
                         System.err.println("Could not open error file: " + streams.err);
                     }
                 }
-                builtin.execute(cmdArgs, input, currentDirectory);
+                Path result = builtin.execute(cmdArgs, input, currentDirectory);
+                if (command.equals("cd")) {
+                    this.currentDirectory = result;
+                }
             } finally {
                 if (fileOut != null)
                     fileOut.close();
