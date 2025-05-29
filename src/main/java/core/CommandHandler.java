@@ -254,9 +254,17 @@ public class CommandHandler {
         try {
             List<List<String>> tokenizedParts = new ArrayList<>();
             for (String part : parts) {
-                List<String> tokens = Arrays.asList(part.trim().split("\\s+"));
-                tokenizedParts.add(tokens);
+                List<String> tokens = tokenize(part.trim());
+                if (!tokens.isEmpty()) {
+                    tokenizedParts.add(tokens);
+                }
             }
+
+            if (tokenizedParts.isEmpty()) {
+                return currentDirectory;
+            }
+
+            final int finalN = tokenizedParts.size();
 
             boolean allExternal = true;
             for (List<String> tokens : tokenizedParts) {
@@ -308,116 +316,130 @@ public class CommandHandler {
                 return currentDirectory;
             }
 
-            java.io.PipedInputStream[] pipeIns = new java.io.PipedInputStream[n - 1];
-            java.io.PipedOutputStream[] pipeOuts = new java.io.PipedOutputStream[n - 1];
-            for (int i = 0; i < n - 1; i++) {
+            java.io.PipedOutputStream[] pipeOuts = new java.io.PipedOutputStream[finalN - 1];
+            java.io.PipedInputStream[] pipeIns = new java.io.PipedInputStream[finalN - 1];
+
+            for (int i = 0; i < finalN - 1; i++) {
                 pipeOuts[i] = new java.io.PipedOutputStream();
                 pipeIns[i] = new java.io.PipedInputStream(pipeOuts[i]);
             }
 
-            Process[] processes = new Process[n];
-            Thread[] threads = new Thread[n];
-            PrintStream originalOut = System.out;
-            java.io.InputStream originalIn = System.in;
+            List<Thread> allThreads = new ArrayList<>();
+            List<Process> allProcesses = new ArrayList<>();
 
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < finalN; i++) {
                 final int idx = i;
                 List<String> tokens = tokenizedParts.get(idx);
-                boolean isBuiltin = !tokens.isEmpty() && Arrays.asList(SHELL_COMMANDS).contains(tokens.get(0));
+                String commandName = tokens.get(0);
+                boolean isBuiltin = Arrays.asList(SHELL_COMMANDS).contains(commandName);
 
                 if (isBuiltin) {
-                    threads[idx] = new Thread(() -> {
-                        PrintStream prevOut = System.out;
-                        java.io.InputStream prevIn = System.in;
+                    Thread thread = new Thread(() -> {
+                        java.io.InputStream originalIn = System.in;
+                        PrintStream originalOut = System.out;
+
                         try {
                             if (idx == 0) {
                                 System.setIn(originalIn);
                             } else {
                                 System.setIn(pipeIns[idx - 1]);
                             }
-                            if (idx == n - 1) {
+                            if (idx == finalN - 1) {
                                 System.setOut(originalOut);
                             } else {
                                 System.setOut(new PrintStream(pipeOuts[idx], true));
                             }
-                            Command cmd = this.getCommand(tokens.toArray(new String[0]), "", null, null);
-                            cmd.execute(tokens.toArray(new String[0]), "", currentDirectory);
-                            System.out.flush();
-                            if (idx < n - 1) {
+                            Command cmd = builtinCommands.get(commandName);
+                            if (cmd != null) {
+                                String[] args = tokens.toArray(new String[0]);
+                                cmd.execute(args, String.join(" ", tokens), currentDirectory);
+                            }
+                            if (idx < finalN - 1) {
+                                System.out.flush();
                                 pipeOuts[idx].close();
                             }
                         } catch (Exception e) {
                         } finally {
-                            System.setOut(prevOut);
-                            System.setIn(prevIn);
+                            System.setIn(originalIn);
+                            System.setOut(originalOut);
                         }
                     });
-                    threads[idx].start();
+                    thread.start();
+                    allThreads.add(thread);
                 } else {
-                    ProcessBuilder pb = new ProcessBuilder(tokens);
-                    pb.directory(currentDirectory.toFile());
-
-                    if (idx == 0) {
-                        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-                    } else {
-                        pb.redirectInput(ProcessBuilder.Redirect.PIPE);
-                    }
-                    if (idx == n - 1) {
-                        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                    } else {
-                        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-                    }
-
-                    Process process = pb.start();
-                    processes[idx] = process;
-
-                    if (idx > 0 && pipeIns[idx - 1] != null) {
-                        Thread t = new Thread(() -> {
-                            try (var out = process.getOutputStream()) {
-                                pipeIns[idx - 1].transferTo(out);
-                            } catch (Exception e) {
-                            }
-                        });
-                        t.start();
-                    }
-
-                    if (idx < n - 1) {
-                        Thread t = new Thread(() -> {
-                            try (var in = process.getInputStream()) {
-                                in.transferTo(pipeOuts[idx]);
-                                pipeOuts[idx].close();
-                            } catch (Exception e) {
-                            }
-                        });
-                        t.start();
-                    }
-
-                    Thread errThread = new Thread(() -> {
-                        try (var err = process.getErrorStream()) {
-                            err.transferTo(System.err);
-                        } catch (Exception ignored) {
+                    try {
+                        ProcessBuilder pb = new ProcessBuilder(tokens);
+                        pb.directory(currentDirectory.toFile());
+                        if (idx == 0) {
+                            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectInput(ProcessBuilder.Redirect.PIPE);
                         }
-                    });
-                    errThread.start();
+                        if (idx == finalN - 1) {
+                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                        } else {
+                            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                        }
+                        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                        Process process = pb.start();
+                        allProcesses.add(process);
+                        if (idx > 0) {
+                            Thread inputThread = new Thread(() -> {
+                                try (var out = process.getOutputStream()) {
+                                    pipeIns[idx - 1].transferTo(out);
+                                } catch (Exception e) {
+                                }
+                            });
+                            inputThread.start();
+                            allThreads.add(inputThread);
+                        }
+                        if (idx < finalN - 1) {
+                            Thread outputThread = new Thread(() -> {
+                                try (var in = process.getInputStream()) {
+                                    in.transferTo(pipeOuts[idx]);
+                                } catch (Exception e) {
+                                } finally {
+                                    try {
+                                        pipeOuts[idx].close();
+                                    } catch (Exception e) {
+                                    }
+                                }
+                            });
+                            outputThread.start();
+                            allThreads.add(outputThread);
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Error starting process: " + e.getMessage());
+                    }
                 }
             }
-
-            for (int i = 0; i < n; i++) {
-                if (threads[i] != null) {
-                    threads[i].join();
-                }
-                if (processes[i] != null) {
-                    processes[i].waitFor();
+            for (Thread thread : allThreads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
-
-        } catch (IOException | InterruptedException e) {
+            for (Process process : allProcesses) {
+                try {
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            for (java.io.PipedOutputStream pipe : pipeOuts) {
+                try {
+                    if (pipe != null) {
+                        pipe.close();
+                    }
+                } catch (Exception e) {
+                }
+            }
+        } catch (IOException e) {
             System.err.println("Error executing pipeline: " + e.getMessage());
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
         }
-
         return currentDirectory;
     }
 
