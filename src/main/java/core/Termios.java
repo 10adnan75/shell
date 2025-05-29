@@ -29,7 +29,8 @@ public class Termios implements AutoCloseable {
                 throw new Exception("tcgetattr failed");
             LibC.struct_termios termios = previous.clone();
             long lflag = termios.c_lflag.longValue();
-            lflag &= ~(LibC.ECHO | LibC.ICANON);
+            lflag &= ~LibC.ICANON;
+            lflag |= LibC.ECHO;
             termios.c_lflag.setValue(lflag);
             termios.c_cc[LibC.VMIN] = 1;
             termios.c_cc[LibC.VTIME] = 0;
@@ -45,9 +46,9 @@ public class Termios implements AutoCloseable {
             }
             // long lflagCheck = termios.c_lflag.longValue();
             // if ((lflagCheck & LibC.ECHO) == 0) {
-            //     System.err.println("DEBUG: ECHO is disabled");
+            // System.err.println("DEBUG: ECHO is disabled");
             // } else {
-            //     System.err.println("DEBUG: ECHO is still enabled");
+            // System.err.println("DEBUG: ECHO is still enabled");
             // }
             rawModeEnabled = true;
         } catch (Exception e) {
