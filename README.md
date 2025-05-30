@@ -16,6 +16,12 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/10adnan75/shell.svg)](https://github.com/10adnan75/shell/graphs/contributors)
 ![Java](https://img.shields.io/badge/java-17%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Last Commit](https://img.shields.io/github/last-commit/10adnan75/shell?style=flat)](https://github.com/10adnan75/shell/commits)
+[![Forks](https://img.shields.io/github/forks/10adnan75/shell?style=social)](https://github.com/10adnan75/shell/network/members)
+[![Stars](https://img.shields.io/github/stars/10adnan75/shell?style=social)](https://github.com/10adnan75/shell/stargazers)
+[![Lines of code](https://img.shields.io/tokei/lines/github/10adnan75/shell)](https://github.com/10adnan75/shell)
+[![Repo Size](https://img.shields.io/github/repo-size/10adnan75/shell)](https://github.com/10adnan75/shell)
+![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-lightgrey)
 
 ---
 
