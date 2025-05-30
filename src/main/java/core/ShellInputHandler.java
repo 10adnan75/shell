@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 
+/** Handles the main shell loop, user input, prompt display, command history navigation, and tab completion. */
 public class ShellInputHandler {
   private final CommandHandler handler;
   private final ShellHistory history;

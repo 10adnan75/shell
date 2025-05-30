@@ -9,6 +9,7 @@ package builtins;
 
 import java.nio.file.Path;
 
+/** Represents a no-operation command (used for error handling or unknown commands). */
 public class NoOpCommand implements Command {
 
   @Override

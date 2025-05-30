@@ -9,6 +9,7 @@ package builtins;
 
 import java.nio.file.Path;
 
+/** Interface for all shell commands (builtins and external). */
 public interface Command {
   /**
    * Executes the command and returns the (possibly updated) current directory.

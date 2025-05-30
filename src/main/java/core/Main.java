@@ -11,6 +11,7 @@ package core;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/** Entry point for the Java Shell application. Initializes core components and starts the shell loop. */
 public class Main {
   public static void main(String[] args) throws Exception {
     CommandHandler handler = new CommandHandler();
