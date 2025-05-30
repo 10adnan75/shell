@@ -7,14 +7,13 @@
 **License:** MIT License (see [LICENSE](LICENSE) for details)  
 **Trademark:** Adnan Mazharuddin Shaikh™
 
-[![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
+[![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg?)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/10adnan75/shell/branch/main/graph/badge.svg)](https://codecov.io/gh/10adnan75/shell)
 [![Javadoc](https://img.shields.io/badge/docs-javadoc-blue)](https://10adnan75.github.io/shell/api/)
 [![GitHub release](https://img.shields.io/github/v/release/10adnan75/shell.svg)](https://github.com/10adnan75/shell/releases)
 [![GitHub issues](https://img.shields.io/github/issues/10adnan75/shell.svg)](https://github.com/10adnan75/shell/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/10adnan75/shell.svg)](https://github.com/10adnan75/shell/pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/10adnan75/shell.svg)](https://github.com/10adnan75/shell/graphs/contributors)
-
 ![Java](https://img.shields.io/badge/java-17%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
@@ -30,7 +29,7 @@ A modern, POSIX-like shell written in Java, featuring built-in commands, externa
 
 ![Shell Demo](demo.gif)
 
-*Showcase your shell in action!*
+*Showcasing my shell in action!*
 
 **How to add your own demo:**
 - Record a GIF or video of your shell using a tool like [asciinema](https://asciinema.org/), [peek](https://github.com/phw/peek), or your favorite screen recorder.
