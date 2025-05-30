@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>10adnan75-shell: Java POSIX Shell</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto 0 auto;
+      background: rgba(30, 30, 30, 0.95);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      padding: 2.5rem 2rem 2rem 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.2em;
+      letter-spacing: 1px;
+      color: #00e676;
+    }
+    .author {
+      font-size: 1.1rem;
+      color: #bdbdbd;
+      margin-bottom: 1.2em;
+    }
+    .badges img {
+      margin: 0 4px 10px 4px;
+      vertical-align: middle;
+    }
+    .desc {
+      font-size: 1.2rem;
+      margin: 1.2em 0 1.5em 0;
+      color: #e0e0e0;
+    }
+    .features {
+      text-align: left;
+      margin: 1.5em auto 2em auto;
+      display: inline-block;
+      color: #b2ff59;
+      font-size: 1.08rem;
+    }
+    .features li {
+      margin-bottom: 0.5em;
+    }
+    .cta-btn {
+      display: inline-block;
+      margin: 1.5em 0 0.5em 0;
+      padding: 0.9em 2.2em;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #232526;
+      background: linear-gradient(90deg, #00e676 0%, #00bfae 100%);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .cta-btn:hover {
+      background: linear-gradient(90deg, #00bfae 0%, #00e676 100%);
+      color: #fff;
+    }
+    .links {
+      margin-top: 1.5em;
+      font-size: 1.1rem;
+    }
+    .links a {
+      color: #00e676;
+      text-decoration: none;
+      margin: 0 0.7em;
+      transition: color 0.2s;
+    }
+    .links a:hover {
+      color: #fff176;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 1.2rem 0.5rem; }
+      h1 { font-size: 2rem; }
+      .desc, .features, .links { font-size: 1rem; }
+      .cta-btn { font-size: 1rem; padding: 0.7em 1.2em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>10adnan75-shell</h1>
+    <div class="author">by Adnan Mazharuddin Shaikh</div>
+    <div class="badges">
+      <img src="https://img.shields.io/github/stars/10adnan75/shell?style=social" alt="GitHub stars">
+      <img src="https://img.shields.io/github/forks/10adnan75/shell?style=social" alt="GitHub forks">
+      <img src="https://img.shields.io/github/last-commit/10adnan75/shell?color=00e676" alt="Last commit">
+      <img src="https://img.shields.io/github/repo-size/10adnan75/shell?color=00e676" alt="Repo size">
+      <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-lightgrey" alt="Platform">
+      <img src="https://img.shields.io/badge/java-17%2B-blue" alt="Java 17+">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+    </div>
+    <div class="desc">
+      A modern, POSIX-like shell written in Java.<br>
+      Supports built-in commands, external execution, pipelines, redirection, tab completion, and more.<br>
+      Built for the <a href="https://app.codecrafters.io/courses/shell/overview" target="_blank" style="color:#00e676;">Codecrafters Shell Challenge</a>.
+    </div>
+    <ul class="features">
+      <li>POSIX-like command parsing</li>
+      <li>Built-in commands: <code>cd</code>, <code>pwd</code>, <code>echo</code>, <code>exit</code>, <code>type</code>, <code>history</code></li>
+      <li>External command execution</li>
+      <li>Pipelines (<code>|</code>) and redirection (<code>&gt;</code>, <code>&gt;&gt;</code>, <code>2&gt;</code>, <code>2&gt;&gt;</code>)</li>
+      <li>Tab completion for commands and files</li>
+      <li>Command history navigation (up/down arrows)</li>
+      <li>Modular, OOP codebase</li>
+      <li>Comprehensive tests and documentation</li>
+    </ul>
+    <a class="cta-btn" href="api/" target="_blank">View API Documentation</a>
+    <div class="links">
+      <a href="https://github.com/10adnan75/shell" target="_blank">GitHub Repo</a> |
+      <a href="https://app.codecrafters.io/courses/shell/overview" target="_blank">Codecrafters Challenge</a>
+    </div>
+  </div>
+</body>
+</html> 
