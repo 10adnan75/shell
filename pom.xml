@@ -54,7 +54,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <!-- This is the main class of your program which will be executed-->
-                            <mainClass>Main</mainClass>
+                            <mainClass>core.Main</mainClass>
                         </manifest>
                     </archive>
                     <outputDirectory>${dir}</outputDirectory>
@@ -114,6 +114,8 @@
                 <version>3.11.2</version>
                 <configuration>
                     <outputDirectory>${project.build.directory}/reports</outputDirectory>
+                    <doctitle>10adnan75-shell 1.0 API</doctitle>
+                    <windowtitle>10adnan75-shell 1.0 API</windowtitle>
                 </configuration>
             </plugin>
         </plugins>

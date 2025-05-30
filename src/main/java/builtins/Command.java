@@ -1,7 +1,3 @@
-package builtins;
-
-import java.nio.file.Path;
-
 /**
  * Command.java
  *
@@ -9,6 +5,10 @@ import java.nio.file.Path;
  *
  * <p>Author: Adnan Mazharuddin Shaikh
  */
+package builtins;
+
+import java.nio.file.Path;
+
 public interface Command {
   /**
    * Executes the command and returns the (possibly updated) current directory.

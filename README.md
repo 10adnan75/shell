@@ -73,8 +73,8 @@ codecrafters-shell-java/
 ├── src/
 │   ├── main/
 │   │   └── java/
-│   │       ├── Main.java
 │   │       ├── core/
+│   │       │   ├── Main.java
 │   │       │   ├── CommandHandler.java
 │   │       │   ├── ExternalCommand.java
 │   │       │   ├── ShellHistory.java
@@ -106,12 +106,15 @@ codecrafters-shell-java/
 │       ├── ci.yml
 │       └── javadoc.yml
 ├── .gitignore
+├── .gitattributes
 ├── LICENSE
 ├── CHANGELOG.md
 ├── PROJECT_DOCUMENTATION.md
 ├── PROJECT_DOCUMENTATION.pdf
 ├── README.md
+├── codecrafters.yml
 ├── your_program.sh
+├── demo.gif
 └── ...
 ```
 

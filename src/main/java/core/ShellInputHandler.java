@@ -1,10 +1,3 @@
-package core;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-
 /**
  * ShellInputHandler.java
  *
@@ -13,6 +6,13 @@ import java.nio.file.Path;
  *
  * <p>Author: Adnan Mazharuddin Shaikh
  */
+package core;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+
 public class ShellInputHandler {
   private final CommandHandler handler;
   private final ShellHistory history;
