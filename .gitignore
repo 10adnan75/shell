@@ -1,6 +1,4 @@
 *.jar
 target/
 .idea/
-.gitignore
-.gitattributes
-pom.xml
+.DS_Store

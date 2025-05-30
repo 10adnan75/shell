@@ -1,3 +1,12 @@
+[![progress-banner](https://backend.codecrafters.io/progress/shell/542592db-4059-464e-b531-1a3ba30b51c9)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+
+**Author:** Adnan Mazharuddin Shaikh  
+**Email:** adnanmazharuddinshaikh@gmail.com  
+**GitHub:** [10adnan75](https://github.com/10adnan75)  
+**Copyright:** © 2025 Adnan Mazharuddin Shaikh. All rights reserved.  
+**License:** MIT License (see [LICENSE](LICENSE) for details)  
+**Trademark:** Adnan Mazharuddin Shaikh™
+
 [![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/10adnan75/shell/branch/main/graph/badge.svg)](https://codecov.io/gh/10adnan75/shell)
 [![Javadoc](https://img.shields.io/badge/docs-javadoc-blue)](https://10adnan75.github.io/shell/api/)
@@ -5,8 +14,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/10adnan75/shell.svg)](https://github.com/10adnan75/shell/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/10adnan75/shell.svg)](https://github.com/10adnan75/shell/pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/10adnan75/shell.svg)](https://github.com/10adnan75/shell/graphs/contributors)
-[![progress-banner](https://backend.codecrafters.io/progress/shell/542592db-4059-464e-b531-1a3ba30b51c9)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
-
 ![Java](https://img.shields.io/badge/java-17%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
@@ -240,14 +247,3 @@ REPLs, builtin commands, and more.
 
 **Note**: If you're viewing this repo on GitHub, head over to
 [codecrafters.io](https://codecrafters.io) to try the challenge.
-
-# Passing the first stage
-
-The entry point for your `shell` implementation is in `src/main/java/Main.java`.
-Study and uncomment the relevant code, and push your changes to pass the first
-stage:
-
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
-```
