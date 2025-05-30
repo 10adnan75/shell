@@ -28,9 +28,61 @@ Welcome to your Java Shell! This project is a fully functional, Unix-like shell 
 
 ## Project Structure
 
-- **src/main/java/core/**: Core logic for the shell (input handling, command parsing, execution, etc.)
-- **src/main/java/builtins/**: All built-in shell commands (like `cd`, `pwd`, `echo`, etc.)
-- **Main.java**: Entry point for the shell application
+```
+codecrafters-shell-java/
+|-- src/
+|   |-- main/
+|   |   |-- java/
+|   |   |   |-- core/
+|   |   |   |   |-- Main.java
+|   |   |   |   |-- CommandHandler.java
+|   |   |   |   |-- ExternalCommand.java
+|   |   |   |   |-- ShellHistory.java
+|   |   |   |   |-- ShellInputHandler.java
+|   |   |   |   |-- TabCompleter.java
+|   |   |   |   |-- Tokenizer.java
+|   |   |   |   |-- TokenizerResult.java
+|   |   |   |   `-- package-info.java
+|   |   |   `-- builtins/
+|   |   |       |-- CdCommand.java
+|   |   |       |-- Command.java
+|   |   |       |-- EchoCommand.java
+|   |   |       |-- ExitCommand.java
+|   |   |       |-- HistoryCommand.java
+|   |   |       |-- NoOpCommand.java
+|   |   |       |-- PwdCommand.java
+|   |   |       |-- TypeCommand.java
+|   |   |       `-- package-info.java
+|   |   `-- test/
+|   |       `-- java/
+|   |           `-- core/
+|   |               |-- CommandHandlerTest.java
+|   |               |-- TestFileUtils.java
+|   |               |-- TestOutputCapture.java
+|   |               `-- TestShellRunner.java
+|-- target/
+|   |-- codecrafters-shell-1.0.jar
+|   `-- ... (build output, coverage, etc.)
+|-- .github/
+|   `-- workflows/
+|       |-- ci.yml
+|       |-- javadoc.yml
+|       `-- lines-of-code.yml
+|-- .gitignore
+|-- .gitattributes
+|-- .DS_Store
+|-- LICENSE
+|-- CHANGELOG.md
+|-- PROJECT_DOCUMENTATION.md
+|-- PROJECT_DOCUMENTATION.pdf
+|-- README.md
+|-- codecrafters.yml
+|-- your_program.sh
+|-- demo.gif
+|-- index.html
+|-- command-line.png
+`-- ...
+```
 
 ---
 
