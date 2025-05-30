@@ -7,15 +7,22 @@
 **License:** MIT License (see [LICENSE](LICENSE) for details)  
 **Trademark:** Adnan Mazharuddin Shaikh™
 
-[![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
+[![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/10adnan75/shell/branch/main/graph/badge.svg)](https://codecov.io/gh/10adnan75/shell)
 [![Javadoc](https://img.shields.io/badge/docs-javadoc-blue)](https://10adnan75.github.io/shell/api/)
 [![GitHub release](https://img.shields.io/github/v/release/10adnan75/shell.svg)](https://github.com/10adnan75/shell/releases)
 [![GitHub issues](https://img.shields.io/github/issues/10adnan75/shell.svg)](https://github.com/10adnan75/shell/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/10adnan75/shell.svg)](https://github.com/10adnan75/shell/pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/10adnan75/shell.svg)](https://github.com/10adnan75/shell/graphs/contributors)
+
 ![Java](https://img.shields.io/badge/java-17%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+---
+
+# Project Description
+
+A modern, POSIX-like shell written in Java, featuring built-in commands, external command execution, pipelines, redirection, tab completion, command history, and robust test utilities. Built as part of the Codecrafters "Build Your Own Shell" challenge.
 
 ---
 
@@ -43,7 +50,133 @@
 - Command history navigation (up/down arrows)
 - Modular, OOP codebase
 - PDF and Markdown documentation
-- **Test utilities for contributors** (see Testing section)
+- Test utilities for contributors
+
+---
+
+# Documentation
+
+- **Live Javadoc API docs:** After the Javadoc workflow runs successfully, your live API documentation will be available at [https://10adnan75.github.io/shell/api/](https://10adnan75.github.io/shell/api/).
+- For PDF and Markdown documentation, see `PROJECT_DOCUMENTATION.md` and `PROJECT_DOCUMENTATION.pdf` in the repo.
+
+---
+
+# Project Structure
+
+```
+codecrafters-shell-java/
+├── src/
+│   ├── main/
+│   │   └── java/
+│   │       ├── Main.java
+│   │       ├── core/
+│   │       │   ├── CommandHandler.java
+│   │       │   ├── ExternalCommand.java
+│   │       │   ├── ShellHistory.java
+│   │       │   ├── ShellInputHandler.java
+│   │       │   ├── TabCompleter.java
+│   │       │   ├── Tokenizer.java
+│   │       │   └── TokenizerResult.java
+│   │       └── builtins/
+│   │           ├── CdCommand.java
+│   │           ├── Command.java
+│   │           ├── EchoCommand.java
+│   │           ├── ExitCommand.java
+│   │           ├── HistoryCommand.java
+│   │           ├── NoOpCommand.java
+│   │           ├── PwdCommand.java
+│   │           └── TypeCommand.java
+│   └── test/
+│       └── java/
+│           └── core/
+│               ├── CommandHandlerTest.java
+│               ├── TestFileUtils.java
+│               ├── TestOutputCapture.java
+│               └── TestShellRunner.java
+├── target/
+│   ├── codecrafters-shell-1.0.jar
+│   └── ... (build output, coverage, etc.)
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── javadoc.yml
+├── .gitignore
+├── LICENSE
+├── CHANGELOG.md
+├── PROJECT_DOCUMENTATION.md
+├── PROJECT_DOCUMENTATION.pdf
+├── README.md
+├── your_program.sh
+└── ...
+```
+
+---
+
+# How to Build & Run
+
+## Requirements
+- Java 17 or higher (JDK; works with Java 17, 21, or 23)
+- Maven (for building and running)
+- (Optional) [Pandoc](https://pandoc.org/) and [TeX Live/MacTeX](https://www.tug.org/mactex/) for generating PDF documentation
+
+## Setup & Usage
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/10adnan75/shell.git
+   cd shell
+   ```
+2. **Build the project:**
+   ```sh
+   mvn clean package
+   ```
+3. **Run the shell:**
+   ```sh
+   ./your_program.sh
+   ```
+   Or, run directly with Java:
+   ```sh
+   mvn exec:java -Dexec.mainClass=Main
+   ```
+4. **(Optional) Generate documentation PDF:**
+   ```sh
+   pandoc PROJECT_DOCUMENTATION.md -o PROJECT_DOCUMENTATION.pdf --pdf-engine=pdflatex
+   ```
+5. **(Optional) Generate Javadoc:**
+   ```sh
+   mvn javadoc:javadoc
+   ```
+   The generated documentation will be in `target/site/apidocs/`.
+
+---
+
+# Testing
+
+To run all tests:
+
+```sh
+mvn test
+```
+
+Test utilities are available in `src/test/java/core/`:
+- `TestOutputCapture` – Capture and assert on System.out/System.err.
+- `TestFileUtils` – Manage temporary files and directories.
+- `TestShellRunner` – Run shell commands and capture output.
+
+---
+
+# Code Formatting
+
+To format all Java files using Google Java Format:
+
+```sh
+google-java-format -r src/**/*.java
+```
+
+Install with Homebrew:
+```sh
+brew install google-java-format
+```
 
 ---
 
@@ -78,38 +211,6 @@ Contributions are welcome! To contribute:
 
 ---
 
-# Testing
-
-To run all tests:
-
-```sh
-mvn test
-```
-
-**Test utilities are available in `src/test/java/core/`:**
-- `TestOutputCapture` – Capture and assert on System.out/System.err.
-- `TestFileUtils` – Manage temporary files and directories.
-- `TestShellRunner` – Run shell commands and capture output.
-
-Use these helpers to write robust and maintainable tests for your shell project.
-
----
-
-# Code Formatting
-
-To format all Java files using Google Java Format:
-
-```sh
-google-java-format -r src/**/*.java
-```
-
-Install with Homebrew:
-```sh
-brew install google-java-format
-```
-
----
-
 # FAQ / Troubleshooting
 
 **Q: I get a Java version error.**  
@@ -126,93 +227,6 @@ A: Make sure you are not printing the prompt in non-interactive mode and that al
 
 **Q: How do I run the shell on Windows?**  
 A: This project is designed for Unix-like systems. For Windows, use WSL or a compatible terminal.
-
----
-
-# Project Information
-
-- **Author:** Adnan Mazharuddin Shaikh
-- **Email:** adnanmazharuddinshaikh@gmail.com
-- **GitHub:** [10adnan75](https://github.com/10adnan75)
-- **Copyright:** © 2025 Adnan Mazharuddin Shaikh. All rights reserved.
-- **License:** MIT License (see [LICENSE](LICENSE) for details)
-- **Trademark:** Adnan Mazharuddin Shaikh™
-
----
-
-# How to Run This Project
-
-## Requirements
-- Java 17 or higher (JDK; works with Java 17, 21, or 23)
-- Maven (for building and running)
-- (Optional) [Pandoc](https://pandoc.org/) and [TeX Live/MacTeX](https://www.tug.org/mactex/) for generating PDF documentation
-
-## Setup & Usage
-
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/10adnan75/shell.git
-   cd shell
-   ```
-
-2. **Build the project:**
-   ```sh
-   mvn clean package
-   ```
-
-3. **Run the shell:**
-   ```sh
-   ./your_program.sh
-   ```
-   Or, run directly with Java:
-   ```sh
-   mvn exec:java -Dexec.mainClass=Main
-   ```
-
-4. **(Optional) Generate documentation PDF:**
-   ```sh
-   pandoc PROJECT_DOCUMENTATION.md -o PROJECT_DOCUMENTATION.pdf --pdf-engine=pdflatex
-   ```
-
-5. **(Optional) Generate Javadoc:**
-   ```sh
-   mvn javadoc:javadoc
-   ```
-   The generated documentation will be in `target/site/apidocs/`.
-
-## Notes
-- The entry point is `src/main/java/Main.java`.
-- All source code is in `src/main/java/core/` and `src/main/java/builtins/`.
-- The shell supports built-in commands, external commands, pipelines, redirection, tab completion, and command history.
-
----
-
-# Project Structure
-
-```
-codecrafters-shell-java/
-├── src/
-│   ├── main/
-│   │   └── java/
-│   │       ├── Main.java                # Entry point
-│   │       ├── core/                    # Core logic (input, parsing, execution, etc.)
-│   │       └── builtins/                # Built-in shell commands
-│   └── test/
-│       └── java/
-│           └── core/
-│               ├── CommandHandlerTest.java   # Unit tests
-│               ├── TestOutputCapture.java    # Test utility: capture output
-│               ├── TestFileUtils.java        # Test utility: temp files/dirs
-│               └── TestShellRunner.java      # Test utility: run shell commands
-├── target/                              # Build artifacts (generated by Maven)
-├── pom.xml                              # Maven build file
-├── your_program.sh                      # Script to run the shell
-├── PROJECT_DOCUMENTATION.md             # Project documentation (Markdown)
-├── PROJECT_DOCUMENTATION.pdf            # Project documentation (PDF)
-├── README.md                            # This file
-├── LICENSE                              # License file
-└── ...
-```
 
 ---
 
@@ -237,13 +251,10 @@ codecrafters-shell-java/
 
 ---
 
-This is a starting point for Java solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+# About the Codecrafters "Build Your Own Shell" Challenge
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+This project is a starting point for Java solutions to the [Codecrafters "Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+In this challenge, you'll build your own POSIX-compliant shell that's capable of interpreting shell commands, running external programs, and builtin commands like `cd`, `pwd`, `echo`, and more. Along the way, you'll learn about shell command parsing, REPLs, builtin commands, and more.
+
+**Note:** If you're viewing this repo on GitHub, head over to [codecrafters.io](https://codecrafters.io) to try the challenge interactively.
