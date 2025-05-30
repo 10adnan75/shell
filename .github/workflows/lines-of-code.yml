@@ -1,0 +1,32 @@
+name: Update Lines of Code
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  count-loc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tokei
+        run: sudo apt-get update && sudo apt-get install -y tokei jq
+
+      - name: Count lines of code
+        id: tokei
+        run: |
+          echo "lines=$(tokei . -o json | jq '.Total.code')" >> $GITHUB_OUTPUT
+
+      - name: Update README with lines of code
+        run: |
+          LINES=$(tokei . -o json | jq '.Total.code')
+          sed -i '/<!-- lines-of-code-start -->/,/<!-- lines-of-code-end -->/c\\<!-- lines-of-code-start -->\nLines of code: '"$LINES"'\n<!-- lines-of-code-end -->' README.md
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git diff --cached --quiet || git commit -m "chore: update lines of code in README [skip ci]"
+          git push 
