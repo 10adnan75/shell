@@ -23,6 +23,10 @@
 [![Repo Size](https://img.shields.io/github/repo-size/10adnan75/shell)](https://github.com/10adnan75/shell)
 ![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-lightgrey)
 
+<!-- lines-of-code-start -->
+Lines of code: _updating..._
+<!-- lines-of-code-end -->
+
 ---
 
 # Project Description
@@ -107,6 +111,7 @@ codecrafters-shell-java/
 │       └── javadoc.yml
 ├── .gitignore
 ├── .gitattributes
+├── .DS_Store
 ├── LICENSE
 ├── CHANGELOG.md
 ├── PROJECT_DOCUMENTATION.md
