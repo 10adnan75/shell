@@ -11,6 +11,10 @@ import java.nio.file.Path;
 
 /** Implements the 'exit' builtin command. */
 public class ExitCommand implements Command {
+
+  /** Constructs a new ExitCommand instance. Initializes the built-in 'exit' command. */
+  public ExitCommand() {}
+
   /**
    * Exits the shell with the given status code.
    *

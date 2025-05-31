@@ -13,9 +13,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Represents an external (non-builtin) command to be executed via ProcessBuilder.
- */
+/** Represents an external (non-builtin) command to be executed via ProcessBuilder. */
 public class ExternalCommand implements Command {
   /** The list of arguments for the external command. */
   private final List<String> args;

@@ -10,9 +10,7 @@ package builtins;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Implements the 'history' builtin command.
- */
+/** Implements the 'history' builtin command. */
 public class HistoryCommand implements Command {
   /** The list of previously entered commands to be displayed by the history command. */
   private final List<String> history;

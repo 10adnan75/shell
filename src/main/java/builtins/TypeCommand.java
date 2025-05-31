@@ -15,6 +15,9 @@ import java.util.List;
 /** Implements the 'type' builtin command. */
 public class TypeCommand implements Command {
 
+  /** Constructs a new TypeCommand instance. Initializes the built-in 'type' command. */
+  public TypeCommand() {}
+
   /**
    * Prints how each argument would be interpreted if used as a command name.
    *
