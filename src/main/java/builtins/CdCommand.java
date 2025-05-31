@@ -14,6 +14,12 @@ import java.util.Arrays;
 
 /** Implements the 'cd' (change directory) builtin command. */
 public class CdCommand implements Command {
+
+  /**
+   * Constructs a new CdCommand instance. Initializes the built-in 'cd' (change directory) command.
+   */
+  public CdCommand() {}
+
   /**
    * Changes the shell's current directory and returns the new path.
    *

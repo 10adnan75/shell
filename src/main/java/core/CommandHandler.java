@@ -40,8 +40,8 @@ public class CommandHandler {
   private static final String[] SHELL_COMMANDS = {"echo", "cd", "exit", "type", "pwd", "history"};
 
   /**
-   * Constructs a CommandHandler, initializing all built-in commands, 
-   * the command history, and setting the current working directory to the user's directory.
+   * Constructs a CommandHandler, initializing all built-in commands, the command history, and
+   * setting the current working directory to the user's directory.
    */
   public CommandHandler() {
     this.builtinCommands = new HashMap<>();
@@ -603,9 +603,9 @@ public class CommandHandler {
     return null;
   }
 
-   /**
+  /**
    * Returns the history of commands.
-   * 
+   *
    * @return The list of previous commands entered by the user.
    */
   public List<String> getHistory() {

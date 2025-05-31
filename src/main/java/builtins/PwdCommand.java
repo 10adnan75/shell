@@ -11,6 +11,10 @@ import java.nio.file.Path;
 
 /** Implements the 'pwd' (print working directory) builtin command. */
 public class PwdCommand implements Command {
+
+  /** Constructs a new PwdCommand instance. Initializes the built-in 'pwd' command. */
+  public PwdCommand() {}
+
   /**
    * Prints the current directory.
    *

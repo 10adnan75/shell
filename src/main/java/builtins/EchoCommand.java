@@ -11,6 +11,10 @@ import java.nio.file.Path;
 
 /** Implements the 'echo' builtin command. */
 public class EchoCommand implements Command {
+
+  /** Constructs a new EchoCommand instance. Initializes the built-in 'echo' command. */
+  public EchoCommand() {}
+
   /**
    * Prints its arguments to standard output.
    *

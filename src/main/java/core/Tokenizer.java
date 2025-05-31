@@ -12,6 +12,10 @@ import java.util.List;
 
 /** Tokenizes shell input, handling quotes, escapes, and pipeline splitting. */
 public class Tokenizer {
+
+  /** Constructs a new Tokenizer instance. Used for tokenizing shell input strings. */
+  public Tokenizer() {}
+
   /**
    * Tokenizes the input string, splitting into tokens and pipeline parts.
    *
