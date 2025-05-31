@@ -116,6 +116,9 @@
                     <outputDirectory>${project.build.directory}/reports</outputDirectory>
                     <doctitle>10adnan75-shell 1.0 API</doctitle>
                     <windowtitle>10adnan75-shell 1.0 API</windowtitle>
+                    <header><![CDATA[
+                      <link rel="icon" href="command-line.png" type="image/x-icon">
+                    ]]></header>
                 </configuration>
             </plugin>
         </plugins>
