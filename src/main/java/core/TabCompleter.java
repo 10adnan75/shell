@@ -10,9 +10,14 @@ package core;
 import java.io.File;
 import java.util.*;
 
-/** Provides tab completion for built-in and external commands. */
+/**
+ * Provides tab completion for built-in and external commands.
+ */
 public class TabCompleter {
+  /** The array of built-in command names available for completion. */
   private final String[] builtins;
+
+  /** The PATH environment variable used to locate external commands for completion. */
   private final String pathEnv;
 
   /**

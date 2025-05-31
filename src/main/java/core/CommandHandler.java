@@ -27,12 +27,22 @@ import java.util.Map;
  * external), managing pipelines, redirection, and maintaining the current working directory.
  */
 public class CommandHandler {
+  /** Map of built-in command names to their Command implementations. */
   private final Map<String, Command> builtinCommands;
+
+  /** The current working directory of the shell. */
   private Path currentDirectory;
+
+  /** The list of previously entered commands (command history). */
   private final List<String> history;
 
+  /** The list of supported shell built-in command names. */
   private static final String[] SHELL_COMMANDS = {"echo", "cd", "exit", "type", "pwd", "history"};
 
+  /**
+   * Constructs a CommandHandler, initializing all built-in commands, 
+   * the command history, and setting the current working directory to the user's directory.
+   */
   public CommandHandler() {
     this.builtinCommands = new HashMap<>();
     this.builtinCommands.put("echo", new EchoCommand());
@@ -593,6 +603,11 @@ public class CommandHandler {
     return null;
   }
 
+   /**
+   * Returns the history of commands.
+   * 
+   * @return The list of previous commands entered by the user.
+   */
   public List<String> getHistory() {
     return history;
   }

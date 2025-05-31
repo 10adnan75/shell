@@ -13,11 +13,20 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.List;
 
-/** Represents an external (non-builtin) command to be executed via ProcessBuilder. */
+/**
+ * Represents an external (non-builtin) command to be executed via ProcessBuilder.
+ */
 public class ExternalCommand implements Command {
+  /** The list of arguments for the external command. */
   private final List<String> args;
+
+  /** The file to which standard output should be redirected, or null if not used. */
   private final File redirectFile;
+
+  /** The file to which standard error should be redirected, or null if not used. */
   private final File stderrRedirectFile;
+
+  /** Enables debug output if set to true. */
   private static final boolean DEBUG = false;
 
   /**

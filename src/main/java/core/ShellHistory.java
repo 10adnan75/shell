@@ -10,9 +10,14 @@ package core;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Manages the command history buffer and navigation (up/down arrows). */
+/**
+ * Manages the command history buffer and navigation (up/down arrows).
+ */
 public class ShellHistory {
+  /** The list of previously entered commands. */
   private final List<String> history = new ArrayList<>();
+
+  /** The current index for navigating through the command history. */
   private int historyIndex = -1;
 
   /**

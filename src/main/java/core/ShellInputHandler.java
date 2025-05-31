@@ -13,10 +13,17 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 
-/** Handles the main shell loop, user input, prompt display, command history navigation, and tab completion. */
+/**
+ * Handles the main shell loop, user input, prompt display, command history navigation, and tab completion.
+ */
 public class ShellInputHandler {
+  /** The command handler responsible for executing commands. */
   private final CommandHandler handler;
+
+  /** The shell history manager for storing and navigating command history. */
   private final ShellHistory history;
+
+  /** The tab completer for providing command and file completions. */
   private final TabCompleter tabCompleter;
 
   /**
