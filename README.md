@@ -5,7 +5,6 @@
 **GitHub:** [10adnan75](https://github.com/10adnan75)  
 **Copyright:** © 2025 Adnan Mazharuddin Shaikh. All rights reserved.  
 **License:** MIT License (see [LICENSE](LICENSE) for details)  
-**Trademark:** Adnan Mazharuddin Shaikh™
 
 [![Build & Test](https://github.com/10adnan75/shell/actions/workflows/ci.yml/badge.svg?)](https://github.com/10adnan75/shell/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/10adnan75/shell/branch/main/graph/badge.svg)](https://codecov.io/gh/10adnan75/shell)
