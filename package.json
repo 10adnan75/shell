@@ -1,0 +1,18 @@
+{
+  "name": "java-posix-shell-web",
+  "version": "1.0.0",
+  "description": "Web-based Java POSIX Shell with Node.js backend and xterm.js frontend.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "Adnan Mazharuddin Shaikh",
+  "license": "MIT"
+} 

@@ -110,7 +110,9 @@ public class ShellInputHandler {
               tempString = tempString.substring(0, tempString.length() - 1);
             }
           } else if (c >= 32 && c <= 126) {
-            System.out.print(c);
+            if (isInteractive()) {
+              System.out.print(c);
+            }
             tempString += c;
           } else if (c == 3) {
             System.out.println();
@@ -141,6 +143,9 @@ public class ShellInputHandler {
    * @return true if interactive, false otherwise.
    */
   private boolean isInteractive() {
+    if (System.getenv("WEB_SHELL") != null) {
+      return false;
+    }
     String[] testVars = {"CODECRAFTERS_TEST", "CI", "TEST"};
     for (String var : testVars) {
       if (System.getenv(var) != null) {
