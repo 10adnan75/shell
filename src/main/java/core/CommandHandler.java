@@ -208,6 +208,10 @@ public class CommandHandler {
           if (backslash) {
             currentToken.append(c);
           } else {
+            if (quote == null) {
+              backslash = true;
+              continue;
+            }
             switch (quote) {
               case '\'' -> currentToken.append(c);
               case '"' -> {
@@ -223,10 +227,6 @@ public class CommandHandler {
                 } else {
                   currentToken.append(c);
                 }
-              }
-              case null -> {
-                backslash = true;
-                continue;
               }
               default -> {}
             }
