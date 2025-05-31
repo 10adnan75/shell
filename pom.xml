@@ -121,6 +121,54 @@
                     ]]></header>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-favicon-to-javadoc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/reports/apidocs</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>command-line.png</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                  <execution>
+                    <id>inject-favicon-into-javadoc</id>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>exec</goal>
+                    </goals>
+                    <configuration>
+                      <executable>sh</executable>
+                      <arguments>
+                        <argument>-c</argument>
+                        <argument><![CDATA[
+                          find ${project.build.directory}/reports/apidocs -name '*.html' -exec sed -i 's|<head>|<head>\n    <link rel="icon" href="command-line.png" type="image/x-icon">|' {} +
+                        ]]></argument>
+                      </arguments>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
