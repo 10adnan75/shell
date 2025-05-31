@@ -23,7 +23,7 @@
 ![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-lightgrey)
 
 <!-- lines-of-code-start -->
-Lines of code: 1634
+Lines of code: 2569
 <!-- lines-of-code-end -->
 
 ---
